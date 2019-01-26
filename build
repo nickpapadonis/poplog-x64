@@ -33,6 +33,11 @@ echo "mklibpop"
 cd $popcom
 pwd
 
+# below may not work
+echo "mkXpm"
+#./mkXpm -I/usr/lib64
+./mkXpm -I//usr/lib/x86_64-linux-gnu/
+
 cd $usepop/pop/obj
     pwd
     echo 'saving library files in old'
@@ -76,6 +81,7 @@ echo "link a complete system into a newpop11 image, using pglink"
 echo " -----------------------------------------------"
 cd $popsys
 pglink -core
+# Nick: remove -core?
 
 # exit
 ls -l newpop11
@@ -85,14 +91,7 @@ mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
-### The following are done by the newpop command
-## $popcom/mkstartup
-##
-## ## Needed for next items
-## setenv pop_pop11 "-$popsavelib/startup.psv"
-##
-## $popcom/mkplog
-## $popcom/mkclisp
-## $popcom/mkpml
-## $popcom/mkxved
+#Nick: unknown below
+# $usepop/pop/src/newpop -link -norsv
+#$usepop/pop/src/newpop -link -x=-xm -norsv
 
