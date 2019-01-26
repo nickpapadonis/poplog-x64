@@ -27,7 +27,7 @@ RANLIB=$(CCROOT)/bin/ranlib
 # Sussex - for CTN/CRN X11R4
 ## Altered A.S, 17 May 2012
 ####XROOT=/usr/local/X11R4
-XROOT=/usr/lib64
+XROOT=$(x11_64_libs)
 # Sussex - for CTN/CRN X11R3
 # XROOT=/usr/local/X11
 # Sussex - for System V (Bobcat) X

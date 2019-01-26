@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+##    poplog pop11
+##    poplog ved
+##    poplog xved <file>
+##    poplog prolog
+##    poplog clisp
+##    poplog pml
+##    poplog pop11 +eliza
+
+poplogroot=`pwd`
+usepop=$poplogroot
+popsys=$usepop/pop/pop
+popexternlib=$usepop/pop/extern/lib
+popautolib=$usepop/pop/lib/auto
+popcom=$usepop/pop/com
+popsrc=$usepop/pop/src
+# set the poplocal variables
+poplocal=$poplogroot
+
+# Maybe Redhat
+#x11_64_libs=/usr/lib64
+# Debian and Ubuntu
+x11_64_libs=/usr/lib/x86_64-linux-gnu/
+local=$poplocal/local
+
+# Run the initialisation files to set up additional environment
+# variables, extend $PATH, etc.
+. $usepop/pop/com/poplog.sh
+
+# cp /pom/kompi/lang/poplog/npop3/v15.53/pop/pop/corepop.bb /pom/kompi/lang/poplog/npop3/v15.53/pop/pop/corepop
+
+PATH=$popsys:$PATH
+export PATH
+
+export poplocal poplib poplogroot local usepop popsys x11_64_libs
+export popcom popexternlib popsrc

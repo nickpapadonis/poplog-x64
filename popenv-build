@@ -1,0 +1,11 @@
+#!/bin/bash
+
+source ./popenv
+
+if [ -d ~/Poplib ] ; then
+    poplib=~/Poplib :
+else
+    poplib=$poplocal/local/setup/Poplib :
+fi
+export poplib
+

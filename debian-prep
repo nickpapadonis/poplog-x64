@@ -1,0 +1,6 @@
+#!/bin/sh
+sudo apt-get install libc6 libncurses5 libstdc++6 \
+build-essential tcsh  \
+libxext6 libxext-dev libx11-6 libx11-dev \
+libxt-dev libmotif-dev libncurses5-dev xterm wget \
+espeak csh tcsh libblas-dev liblapack-dev

@@ -1,29 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-# setup local directory tree for poplog root
-# may be a symbolic link to something else
-
-poplogroot=`pwd`
-
-usepop=$poplogroot
-
-popcom=$usepop/pop/com
-
-# set the poplocal variables
-poplocal=$poplogroot
-local=$poplocal/local
-
-# Run the initialisation files to set up additional environment
-# variables, extend $PATH, etc.
-. $usepop/pop/com/poplog.sh
-
-if [ -d ~/Poplib ] ; then
-    poplib=~/Poplib :
-else
-    poplib=$poplocal/local/setup/Poplib :
-fi
-export poplocal poplib poplogroot local usepop
-
+source ./popenv-build
 
 # prevent local files being found and compiled
 mv $poplocal/local $poplocal/local.temp
@@ -107,4 +84,15 @@ ls -l newpop11
 mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
+
+### The following are done by the newpop command
+## $popcom/mkstartup
+##
+## ## Needed for next items
+## setenv pop_pop11 "-$popsavelib/startup.psv"
+##
+## $popcom/mkplog
+## $popcom/mkclisp
+## $popcom/mkpml
+## $popcom/mkxved
 

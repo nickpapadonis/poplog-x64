@@ -1,0 +1,97 @@
+#!/bin/bash
+
+source ./popenv-build
+
+# prevent local files being found and compiled
+mv $poplocal/local $poplocal/local.temp
+
+ls -l $poplocal/local.temp
+
+if true ; then
+    cd $popsys
+
+pwd
+echo "rebuilding system images"
+
+$popsrc/mksyscomp -d popc poplibr poplink
+
+ls -l *.psv
+
+ln -s corepop popc
+ln -s corepop poplibr
+ln -s corepop poplink
+
+fi
+
+if true ; then
+    cd $popexternlib
+pwd
+
+echo "mklibpop"
+./mklibpop
+
+cd $popcom
+pwd
+
+# below may not work
+echo "mkXpm"
+#./mkXpm -I/usr/lib64
+./mkXpm -I//usr/lib/x86_64-linux-gnu/
+
+cd $usepop/pop/obj
+    pwd
+    echo 'saving library files in old'
+    mkdir old
+    ls -l
+    mv *.* old
+fi
+
+echo 'Recompiling base system'
+cd $usepop/pop/src
+    pwd
+    echo 'pgcomp'
+    pgcomp *.[ps]
+
+    echo 'pglibr'
+    pglibr -c ../obj/src.wlb *.w
+#    rm *.[ow]
+echo 'After recompilation'
+
+if true ; then
+cd $usepop/pop/ved/src/
+    pwd
+    echo 'pgcomp'
+    pgcomp *.[ps]
+    echo 'pglibr'
+    time pglibr -c ../../obj/vedsrc.wlb *.w
+    rm *.[ow]
+
+cd $usepop/pop/x/src/
+    pwd
+    echo 'pgcomp'
+    pgcomp *.[ps]
+    echo 'pglibr'
+    pglibr -c ../../obj/xsrc.wlb *.w
+    rm *.[ow]
+ 
+fi
+# link a complete system into a newpop11 image, using pglink
+echo " -----------------------------------------------"
+echo "link a complete system into a newpop11 image, using pglink"
+echo " -----------------------------------------------"
+cd $popsys
+pglink -core
+# Nick: remove -core?
+
+# exit
+ls -l newpop11
+./corepop %nort ../lib/lib/mkimage.p -entrymain ./newpop.psv ../lib/lib/newpop.p
+
+mv $poplocal/local.temp $poplocal/local
+
+ls -l $poplocal/local
+
+#Nick: unknown below
+# $usepop/pop/src/newpop -link -norsv
+#$usepop/pop/src/newpop -link -x=-xm -norsv
+
