@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Internal system level language builds the dialog of POP as
+# a meta-compiler to build final POP.
+#
+# There are assembly files written in the target system language
+# to implement the core functionality that interfaces to the target 
+# system.  This includes stack maniupulation, frame and garbage
+# collection.  Produce the assembler files with this meta POP dialect
+# then use the linker and assembler on the platform to create executables.
+
 source ./popenv-build
 
 # prevent local files being found and compiled
@@ -95,3 +104,6 @@ ls -l $poplocal/local
 # $usepop/pop/src/newpop -link -norsv
 #$usepop/pop/src/newpop -link -x=-xm -norsv
 
+# Move out the old binary
+mv $popsys/basepop11 $popsys/basepop11.old
+mv $popsys/newpop11 $popsys/basepop11
