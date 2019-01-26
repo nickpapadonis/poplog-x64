@@ -52,9 +52,9 @@ cd $popcom
 pwd
 
 # below may not work
-echo "mkXpm"
+#echo "mkXpm"
 #./mkXpm -I/usr/lib64
-./mkXpm -I//usr/lib/x86_64-linux-gnu/
+#./mkXpm -I/usr/lib/x86_64-linux-gnu/
 
 cd $usepop/pop/obj
     pwd
@@ -98,22 +98,39 @@ echo " -----------------------------------------------"
 echo "link a complete system into a newpop11 image, using pglink"
 echo " -----------------------------------------------"
 cd $popsys
+
+# Only core compiled for now on 64-bit
 pglink -core
-# Nick: remove -core?
 
-# exit
 ls -l newpop11
-
+# newpop11 basepop11
 ./corepop %nort ../lib/lib/mkimage.p -entrymain ./newpop.psv ../lib/lib/newpop.p
 
 mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
-#Nick: unknown below
-# $usepop/pop/src/newpop -link -norsv
-#$usepop/pop/src/newpop -link -x=-xm -norsv
+# NP: Unclear on the next steps here and what to do with "newpop11" to rebuild
+# the rest of poplog.
+
+#$usepop/pop/src/newpop -link -norsv
+#$popsys/newpop11 -link -x=-xm -norsv
 
 # Move out the old binary
-mv $popsys/basepop11 $popsys/basepop11.old
-mv $popsys/newpop11 $popsys/basepop11
+#mv $popsys/basepop11 $popsys/basepop11.old
+#cp $popsys/newpop11 $popsys/basepop11
+
+### The following are done by the base command
+#setenv pop_pop11 "-$popsavelib/startup.psv"
+#$popcom/mkstartup
+
+#rm $popsys/pop11
+#ln -s $popsys/basepop11 $popsys/pop11
+
+##
+## ## Needed for next items
+##
+## $popcom/mkplog
+## $popcom/mkclisp
+## $popcom/mkpml
+## $popcom/mkxved

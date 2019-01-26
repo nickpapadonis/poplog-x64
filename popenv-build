@@ -8,4 +8,4 @@ else
     poplib=$poplocal/local/setup/Poplib :
 fi
 export poplib
-
+export pop_pop11="-$popsavelib/startup.psv"
