@@ -9,6 +9,12 @@
 # collection.  Produce the assembler files with this meta POP dialect
 # then use the linker and assembler on the platform to create executables.
 
+# 1. Use corepop and files in src/syscomp to create 'popc', 'poplink' and 'poplibr'
+# 2. Use 'popc' to compile files in src/
+# 3. Link new poplog using 'poplink' and 'poplibr', this needs support code from
+#    'extern/lib'
+# 4. Build running images
+
 source ./popenv-build
 
 # prevent local files being found and compiled
@@ -94,6 +100,7 @@ pglink -core
 
 # exit
 ls -l newpop11
+
 ./corepop %nort ../lib/lib/mkimage.p -entrymain ./newpop.psv ../lib/lib/newpop.p
 
 mv $poplocal/local.temp $poplocal/local
