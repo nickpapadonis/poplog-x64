@@ -1,0 +1,245 @@
+TEACH SEARCHING                                    SH & AS (adapted JLC)
+
+    N.B. The PARSING demo referred to in this teach file is probably not
+    the same as TEACH * PARSING.
+
+=== State space searching ==============================================
+
+TEACH * TOWER gives an introduction to this topic. This teach file
+enlarges on the idea of controlling search, making use of the ideas of a
+search space, with a goal state, operators which move from one state to
+another, and heuristics for 'pruning' the search. The basic problem is
+that finding a goal state normally requires exploring different
+combinations of operations, and since the different combinations can be
+very numerous, there is a danger of a 'combinatorial explosion'.  To
+illustrate, if you have to make twenty moves to solve your problem, and at
+each stage there are two options to choose from, the possible combinations
+of moves may number:
+
+        2 * 2 * 2.....twenty times = over a million.
+
+experience with teach tower and the parsing demo should help to convince
+you of the magnitude of the problem.
+
+--- A demonstration problem-solving program ----------------------------
+
+It is possible to design GENERAL  problem  solving  programs,  with  the
+power  to use problem-specific heuristics to control the search. Several
+have been attempted in the history of AI, one of the earliest  and  most
+impressive  being  GPS  (the  General  Problem Solver), STRIPS (Stanford
+Research Institute Problem Solver) being a successor. (See the books  by
+Boden and Winston for more information.)
+
+We now illustrate some of the techniques for designing such  a  program.
+We  assume that the problem can be represented by an initial state and a
+set of procedures for getting from any state to  some  connected  states
+(where  each  state  will  be represented as a list of information about
+that state).  We assume  the  existence  of  the  following  procedures:
+ISGOAL  and  NEXTFROM.  Both  of  these  procedures  take  as argument a
+(description of a) state of the world.  ISGOAL returns TRUE iff (if  and
+only  if)  the  state  is  a  'goal  state',  NEXTFROM returns a list of
+(descriptions of) states of the world which can be reached directly from
+the  given  state.  Within  this  framework, we describe a succession of
+increasinly sophisticated 'general' problem-solvers.
+
+Here is a very simple-minded problem solver:
+
+    define search(state) -> state;
+        until isgoal(state) do
+            oneof(nextfrom(state)) -> state
+        enduntil
+    enddefine;
+
+This procedure takes an initial state of the world as argument and
+searches for a goal state, which it returns as its result. Try working out
+what would have happened to the tower program had it used this strategy.
+(You could even try modifying one of the programs in TEACH * TOWER to work
+like this.)
+
+This program has MANY disadvantages. It might easily never find the goal,
+or get to a state from which there is no escape or go round and round in a
+loop for ever.  We can improve on this by being more systematic about
+searching the options.  The strategy we sketch is a generalisation of that
+used in TEACH * TOWER.
+
+Here is a more complicated  procedure  which  performs  a  'depth  first
+search':
+
+    define search(state) -> state;
+    vars alternatives,newalternatives;
+        [] -> alternatives;
+        until isgoal(state) do
+            nextfrom(state) -> newalternatives;
+            [^^newalternatives ^^alternatives] -> alternatives;
+            alternatives --> [?state ??alternatives];
+        enduntil
+    enddefine;
+
+In this procedure, all possible moves at a state are remembered  in  the
+list  ALTERNATIVES.  The  first  element  of  the  list is chosen to see
+whether it is a goal state, and if not new states are generated from it.
+If  a state leads to a 'dead end' (ie NEXTFROM returns []) the procedure
+SEARCH goes back to  the  MOST  RECENT  alternative.  If  there  are  no
+remaining  alternatives  this procedure causes an error. (Can you change
+it so that it returns FALSE instead?) This procedure can still get stuck
+in loops - but a dead end doesn't bother it over much.  (Can you explain
+why? Compare this with the depth first program in TOWER.)
+
+To overcome the problem of looping  we  can  perform  a  'breadth  first
+search', for example:
+
+    define search(state) -> state;
+    vars alternatives;
+        [] -> alternatives;
+        until isgoal(state) do
+            nextfrom(state) -> newalternatives;
+            [^^alternatives ^^newalternatives] -> alternatives;
+            alternatives --> [?state ??alternatives];
+        enduntil
+    enddefine;
+
+The difference between this search and depth first search is in the  way
+the  new  list  of  alternatives  is  formed.  In  both  cases  the next
+alternative considered is the first in  the  list  of  alternatives.  In
+neither case is there any attempt to order the alternatives according to
+their merit, or to select intelligently from the alternatives available.
+(This  version  can  also produce an error. Change it so that it returns
+FALSE instead.)
+
+--- A heuristically guided search strategy -----------------------------
+
+However, this procedure might still consider the same state TWICE, so we
+need to alter the SEARCH procedure. At the same time, we will generalise
+the method of adding a new state to the list of alternative states to be
+explored.  Instead  of always attaching a new state at the front or back
+of the list (as we did with breadth first and depth first search) we can
+put  it  into  the  list  in  a  position  which  represents how good an
+alternative it is. That assumes we have a measure of goodness. First the
+general framework:
+
+    define search(state) -> state;
+    vars alternatives considered templist rest;
+        [] -> alternatives;
+        [] -> considered;
+        until isgoal(state) do
+            [^state ^^considered] -> considered;
+            nextfrom(state) -> templist
+            while   templist matches [?state ??rest] do
+                unless  isoneof(state, alternatives)
+                or      isoneof(state, considered)
+                then    insert(state, alternatives)
+                        -> alternatives
+                endunless;
+                rest -> templist
+            endwhile;
+            alternatives --> [?state ??alternatives];
+        enduntil
+    enddefine;
+
+We need definitions of ISONEOF and INSERT. We could use MEMBER for
+ISONEOF, but in more complex cases we may need a more sophisticated
+procedure, which can tell that two states are equivalent even if their
+descriptions are slightly different.  (Can you think of an example of a
+problem where this can arise?  E.g.  consider a board game, or noughts and
+crosses, or the TOWER problem.)
+
+    define isoneof(teststate,list);
+    vars state;
+        for state in list do
+            if samestate(state, teststate) then
+                return(true)
+            endif
+        endfor;
+        return(false)
+    enddefine;
+
+SAMESTATE is assumed to be a procedure which takes two (descriptions of)
+states and returns TRUE iff they are equivalent.  This procedure must be
+provided by the user of the SEARCH procedure.  I.e we don't assume that
+two 'equivalent' state descriptions have to be recognisable as equal if
+tested by the POP11 operation = or MATCHES.
+
+The INSERT procedure takes a state and a list of states and returns a new
+list of states containing the given state. If INSERT considers the given
+state 'important' (ie close to the goal) it should put it towards the
+beginning of the result, if it considers it not very exciting (ie not very
+close to the goal) it will put it towards the end of the list. The
+following definition of INSERT considers all NEW states important and puts
+them at the front of the result:
+
+    define insert(newstate,list);
+        [^newstate ^^list]
+    enddefine;
+
+This is a 'depth first search'.
+
+This version considers all new states very dull:
+
+    define insert(newstate,list);
+        [^^list ^newstate]
+    enddefine;
+
+The next version attempts to be more general.  It uses a user defined
+procedure, called ISBETTER, to assess a new state:
+
+    define insert(newstate, list) -> result;
+    vars state, rest;
+        if list matches [?state ??rest]
+        and isbetter(state, newstate)
+        then insert(newstate, rest) -> result;
+            [^state ^^result] -> result;
+        else [^newstate ^^list] -> result
+        endif
+    enddefine;
+
+Notice that this procedure can still produce a depth first search:
+
+    define isbetter(oldstate,newstate);
+        false
+    enddefine;
+
+This one makes a breadth first search:
+
+    define isbetter(oldstate,newstate);
+        true
+    enddefine;
+
+Exercise
+--------
+   1. Write the procedures ISGOAL, NEXTFROM, SAMESTATE, and ISBETTER for
+   the TOWER problem, described in TEACH TOWER.
+
+   2. Write the procedures ISGOAL, NEXTFROM, SAMESTATE and ISBETTER  for
+   a  simple  number  game,  for example: "get from some given number to
+   some other given number using only  the  operations  SUBTRACTONE  and
+   DOUBLE"
+
+   Represent a state by a list of numbers - the 'current' number and the
+   numbers  from  which it was got.  For example, the problem of getting
+   from two to seven might look like:
+           : SEARCH([2]) =>
+           ** [2 4 8 7]
+   where the actions performed were DOUBLE, DOUBLE, DOUBLE, SUBTRACTONE.
+
+   Try this puzzle on various forms of the SEARCH procedure - you should
+   insert   appropriate   print   statements  in  the  SEARCH  procedure
+   (otherwise you won't know what its doing!).
+
+   Try various versions of ISBETTER for example:
+           "states with positive numbers are better  than  those
+           without"
+           "state A is better than state B if its current number
+           is closer to the desired number."
+           "states with few numbers  in  them  are  better  than
+           those  with lots, that is [2 4 8] is better than [2 4
+           8 16]
+
+   3. (Difficult).  Discuss whether some version of the above procedures
+   could be used to solve the problem of deciding whether a sentence can
+   be parsed according to a grammar. (This  presupposes  that  you  have
+   already  done  exercises  on  parsing.   If not ask for advice before
+   proceeding.)  How  would  a  state  be  represented?   What  sort  of
+   procedure would NEXTFROM have to be? How could ISBETTER be defined.
+
+   4. Write an essay on approaches to Problem Solving.
+      Reading: AI.PS.R

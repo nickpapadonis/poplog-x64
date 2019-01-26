@@ -1,0 +1,331 @@
+TEACH WALTZ                                        Aaron Sloman Jan 1981
+
+=== WALTZ FILTERING ====================================================
+
+This describes a possible mini-project concerned with the process of
+filtering out impossible interpretations of junctions in an image, using
+the sort of technique described by David Waltz.
+
+In order to understand this document and tackle the exercise, you will
+need to be familiar with the line-labelling approach to interpreting line
+drawings. For introductory reading see:
+
+    M. Boden AI and Natural Man,
+    (look up Clowes, Huffman and Waltz, in index). You'll get only a very
+    qualitative explanation.
+
+    A. Bundy et.al. AI, an Introductory Course,
+    read chapter by Weir on Vision, especially pp. 147 - 153
+
+    P H Winston, Artificial Intelligence,
+    pages 45-72. This is probably the most useful of the three.
+
+
+The original line-labelling approach was first described independently in
+papers by Huffman (in Machine Intelligence 6) and Clowes (in Artificial
+Intelligence Journal 1971).
+
+The program by Waltz, mentioned in the above books, and described in far
+more detail in his thesis, reprinted in P H Winston, The Psychology of
+Computer Vision both extended the sets of possible line labels for
+polyhedral scenes, by introducing cracks and shadows, and also addressed
+the problem of reducing the combinatorial explosion encountered when
+searching for sets of consistent labellings of a complex picture. We are
+here concerned only with the latter.
+
+The essential idea is this. Assume you are given:
+
+    = a set of data D, (e.g. junctions in a picture)
+    = a set of rules R, specifying for each element of D one or more
+      possible interpretations
+    = a set of consistency rules C specifying conditions under which
+      interpretations of neighbouring items of D are consistent
+
+THEN, for each interpretation I of an item d in D, look at each of the
+neighbours n of d, and ask: "does n have at least one interpretation
+(according to R), which is consistent with I, i.e. does not violate any
+rule in C?"
+
+If the answer is NO, then remove I from the possible interpretations of d.
+
+Keep on doing this until nothing more can be removed.
+
+Waltz demonstrated the surprising result that even in quite complex
+pictures, with his extended labelling set, this filtering process could
+sometimes reduce the set of possible interpretations for each element of D
+(i.e. for each junction) down to one.
+
+In that case, the whole picture has only one interpretation consistent
+with C. In some cases the remaining possible interpretations are not
+unique, but since the sets are reduced in size, the search space of
+possible combinations of interpretations is much reduced.
+
+In principle, the consistency rules C may refer to constraints on two,
+three, or more elements of D at a time. But Waltz considered rules dealing
+with only two at a time, and they were all reduced to the single
+consistency rule that if two junctions are joined by a line, then the
+interpretations of those junctions are consistent only if they assign the
+same label to that line.
+
+We shall restrict ourselves to consistency rules of this form. We also
+restrict ourselves to the following sorts of labels:
+
+    [cnvx point1 point2] - edge from point1 to point2 is convex
+    [cncv point1 point2] - edge from point1 to point2 is concave
+    [occ  point1 point2] - the edge is occluding, and attched to the
+        surface which is on the right as you go from point1 to
+        point2
+
+-- A PROGRAMMING TASK -------------------------------------------------------
+
+There are two main parts to a programming exercise exploring these ideas.
+
+FIRST, you need a program which, given a picture, or at least a database D
+of information about lines and junctions, and a set of rules R will
+produce a new database associating possible interpretations with each
+element of D. This is provided, in an incomplete form, in LIB LABELS. The
+set of rules R, given there is incomplete. Your task is to complete it. NB
+make sure that if your database includes a type of junction, then that
+type of junction is catered for in your set of rules. Otherwise you'll get
+errors.
+
+SECOND, you need a program which will filter the sets of interpretations,
+removing those for which there are no consistent neighbouring
+interpretations. This is provided in LIB WALTZ. A possible task is to
+complete an incomplete version of this, or re-implement it all.
+
+There is a simulated SEEPICTURE database available in LIB TETRA; which you
+can use to test the library programs and your own programs. You can see it
+by looking at SHOWLIB * TETRA
+
+-- Using the library programs -----------------------------------------------
+
+You will probably understand the issues better if you first play with the
+library programs, as follows.
+
+    lib tetra;    ;;; get the list of junctions
+    junctions ==>
+
+Note that since none of the programs uses the actual locations of the
+junctions, they are here called J1, J2, etc. instead of giving
+coordinates.
+
+The list provided simulates the result of running seepicture on a picture
+of a tetrahedron with a corner of another object visible behind it.
+
+          2
+         /|\
+        / | \___6
+       /  | 5\ |
+      /   |   \|7
+    1/    |    \
+     \    |    / 3
+      \   |   /
+       \  |  /
+        \ | /
+         \|/4
+
+Using the sets of possible junction interpretations provided by Winston,
+or Weir (in Bundy) see how many interpretations each junction has without
+taking context into account. Then see how many consistent interpretations
+there are. Work all this out with pencil and paper.
+
+Now get the interpretation procedures and rules thus:
+
+    lib labels;
+    rules ==>    ;;; print out interpretation rules
+    interpall(junctions) -> interps;    ;;; get interpretations
+    interps ==>                ;;; print them out
+
+INTERPALL uses the list RULES globally. The rules have the following format
+
+Each junction type is represented by a type label and a set of numbers
+indicating the points in the order in which they would be produced by
+seepicture. (See the SEEPICTURE demo for details of the conventions), e.g.
+
+    [tee 1 2 3 4]
+
+with lines 1-2 and 1-4 forming the crossbar, and 1-3 the stem.
+
+Associated with each junction type is a list of possible interepretations,
+where a possible interpretation assigns a label to each line at the
+junction. Each line is represented by its end points. So a labelled line
+might be
+
+    [OCC 4 1]
+
+meaning the line from 4 to 1 depicts an occluding edge belonging to the
+surface on the right as you go from point 4 to point 1.
+
+Here is the set of rules provided:
+
+[[[ell 1 2 3]
+        [ ell1 [occ 2 1] [occ 1 3]]
+        [ ell2 [occ 3 1] [occ 1 2]]
+        ;;; ell labellings to be completed by you
+ ]
+ [[tee 1 2 3 4]
+        [ tee1 [occ 1 2] [occ 4 1] [cnvx 1 3]]
+        [ tee2 [occ 1 2] [occ 4 1] [cncv 1 3]]
+        [ tee3 [occ 1 2] [occ 4 1] [occ 1 3]]
+        [ tee4 [occ 1 2] [occ 4 1] [occ 3 1]]
+ ]
+ [[arw 1 2 3 4]
+    [arw1 [occ 2 1] [cnvx 1 3] [occ 1 4]]
+        ;;; arrow labellings to be completed by you
+ ]
+ [[frk 1 2 3 4] ]    ;;; fork labellings to be provided by you
+] -> rules;
+
+If you wished to include ends in your pictures you'd have to add a rule
+
+    [[end 1 2] ........]
+
+with the possible interpretations for the ends. The list of
+interpretations could be empty. (See below.)
+
+Note that each interpretation (set of labels) is given a name for easy
+reference, e.g. tee1, ell2, etc., though the programs don't actually use
+the names.
+
+You can make a copy of the program, in order to edit the rules, as follows:
+Examine SHOWLIB * LABELS, Then, to VED <ENTER> name labels.p
+
+You will then have a version of the library file, called 'labels.p'.
+
+If you wish to reduce the verbosity of INTERPALL, do
+
+    false -> chatty;
+
+If you wish to see more of what's going on inside the procedure INTERPALL
+you can do:
+
+    trace getinterps buildinterp labelline;
+    interpall(junctions) -> interps;
+
+You can try the procedure INTERPALL on a different list of junctions. For
+instance, make a picture of a cube, or a square with a diagonal across it,
+using the turtle. Then
+
+    findlines();
+    findjuncs();
+    flush([line ==]);
+    database ==>
+    interpall(database) ==>
+
+-- Filtering Interpretations ------------------------------------------------
+
+To load the filtering programs do
+
+    lib waltz;
+
+Note that this makes CHATTY true again.
+
+You can now apply the procedure FILTER to the list INTERPS, produced by
+INTERPALL, thus
+
+    filter(interps) ==>
+
+As before, making CHATTY FALSE will reduce printout.
+
+The procedure FILTER repeatedly calls PRUNE with different junctions as
+input, until PRUNE cannot reduce the interpretation sets any more.
+
+PRUNE takes a set of interpretations of the sort produced by procedure
+BUILDINTERP in LIB LABELS, and gives each of the interpretations to
+procedure SOMEBADLABEL to see if it can find a labelling in the
+interpretation which is no good.
+
+SOMEBADLABEL uses the point at the junction to access all the linked
+junctions in the list of all interpretations, and for each of them in turn
+sees whether its set of interpretations contains something consistent
+with the given interpretation. It uses NOINTERP for this. SOMEBADLABEL
+returns TRUE if at least one of the labels cannot be accepted, otherwise
+false.
+
+NOINTERP takes a labelled line, a neighbouring junction, and the set of
+all possible interpretations. It looks to see if there is no
+interpretation of the neighbour consistent with the label. If so it
+returns TRUE, but FALSE if there is at least one consistent neighbouring
+interpretation. To check whether the label is consistent with a
+neighbouring interpretation it uses LABELFITSINTERP.
+
+LABELFITSINTERP takes a label and an interpretation of a neighbouring
+junction, and sees if they are consistent, using the procedure CONSISTENT
+to compare the label with the individual labels in the interpretation.
+
+-- Possible exercises -------------------------------------------------------
+
+1.Least ambitious: produce a report showing how LIB LABELS and LIB WALTZ
+work, with examples of pictures other than the one provided in LIB TETRA.
+If possible extend the set of rules in LIB LABELS, and include a picture
+with a FORK junction.
+
+Possible extension: Show what happens if, before you give a list of
+possible interpretations to FILTER, you remove some of the information
+about one of the junctions (as might happen in a picture with noise). The
+result can be that some other junctions end up with no possible
+interpretations. This process whereby a flaw in part of a picture is
+propagated to ruin the interpretation of the whole picture is described as
+'gangrene' by Hinton, in his paper in AISB conference proceedings 1976.
+You can also demonstrate this by using pictures with junctions for which
+the list of possible interpretations in the list RULES, is empty. E.g. in
+a 'noisy' picture where some lines don't meet as they should, but have
+free ends, you can produce gangrene. (But you must then have an entry for
+'end' in the list RULES.
+
+Is there any way of modifying the filtering process to deal with this?
+(Hard question)
+
+2.There is an incomplete version of LIB WALTZ in the library,
+called TEACH * WALTZ2  You can make a copy of this in your directory by
+first examining TEACH * WALTZ2 and then change the file to have the name
+WALTZ.P, in your directory, by doing:
+
+        <ENTER> name waltz.p
+
+Your task is to complete this version of the program so that it works like
+LIB WALTZ, and to write a report on the exercise.
+
+3. Most ambitious: produce your own version of LIB WALTZ (and LIB LABELS
+?)!! The library version does not use the most efficient control strategy.
+It repeatedly looks throught the WHOLE list of junctions to see if any
+possibilities can be pruned, until a complete scan yields no pruning. You
+could try to avoid the repeated examination of junctions by doing a single
+scan and subsequently only looking at neighbours of 'pruned' junctions.
+(That is what Waltz did.)
+
+4. Read the account of the 'depth-first' lamina-labelling program provided
+in the LABELLING demo, and play with the program. Then write a description
+of the relationship between the two approaches, illustrated with printout
+from both programs.
+
+5. The technique of filtering out possibilities using 'local'
+considerations is not restricted to the process of analysing pictures.
+
+Discuss its relationship to various search strategies used in problem
+solving and show with an example how it might be applied to a non-visual
+problem. (A still more general form of local 'co-operative' computation
+used for some kinds of problem solving is called relaxation. A detailed
+analysis of some cases can be found in Geoffrey Hinton's Ph.D. thesis,
+Edinburgh 1977 - unfortunately not published, but you may be able to
+borrow a copy from one of the AI faculty . In particular, he claims that
+use of relaxation is a good way to avoid the 'gangrene' problem sketched
+in question 1).
+
+6. More difficult exercise:  (optional) The filter procedure sketched in
+TEACH WALTZ2 is very inefficient. It repeatedly cycles through the
+database looking to see if anything can be filtered out, until there is
+'no change'. Instead it could be done in a single pass throught the list
+of vertices looking to see if something can be filtered, and each time a
+vertex has interpretations filtered out all the neighbouring vertices
+could be put on a list of vertices to be looked at. Before moving to the
+next database entry, process vertices on this list. For any one of them
+which can be pruned, put ITS neighbours on the list, unless it is there
+already.
+
+    (a) Try programming this.
+    (b) Analyse the difference between this method and the one in TEACH
+        WALTZ2.
+    (c) Prove that a single pass through the database is all that is
+            needed.

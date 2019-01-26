@@ -1,0 +1,376 @@
+TEACH GRAMMAR                              Aaron Sloman Updated Jun 1987
+
+                   GENERATING AND ANALYSING SENTENCES
+                   ----------------------------------
+
+
+         CONTENTS - (Use <ENTER> g to access required sections)
+
+ -- YOU NEED TO KNOW A LITTLE ABOUT GRAMMAR
+ -- A SENTENCE IS AN 'NP' FOLLWED BY A 'VP'
+ -- THERE ARE OTHER SYNTACTIC CATEGORIES
+ -- TYPES OF SENTENCES CAN BE DESCRIBED WITH GRAMMARS
+ -- WORDS HAVE CATEGORIES TOO
+ -- NOW PRINT OUT THE GRAMMAR
+ -- AND THE LEXICON
+ -- HOW TO GENERATE SENTENCES
+ -- EXTEND THE GRAMMAR
+ -- A COMPLEX GRAMMAR IS PROVIDED FOR YOU
+ -- LOOK AT THE LIBRARY GRAMMAR
+ -- SOME RULES ARE RECURSIVE
+ -- LOOK AT THE LIBRARY LEXICON
+ -- THE SETUP PROCEDURE
+ -- SEEING IF YOUR GRAMMAR 'ACCEPTS' A SENTENCE
+ -- TRY MORE SENTENCES
+ -- SOME EXAMPLES WITH PREPOSITION PHRASES
+ -- USING 'DONOUNS'
+ -- USE TRACE TO FIND OUT MORE
+ -- TRACING GIVES MORE INFORMATION IF THE SENTENCE IS UNACCEPTABLE
+ -- HOW TO TURN OFF TRACING
+ -- TRY TO ALLOW SEVERAL ADJECTIVES
+ -- TRY TO STOP THE PRODUCTION OR ACCEPTANCE OF "STUPID" SENTENCES
+ -- SUMMARY
+
+The LIB GRAMMAR library package makes available some programs which you
+can use to explore sentence structures. First give the command:
+
+    lib grammar;
+
+This will take a little time. Then, when you get the colon prompt again,
+type
+
+    teach
+
+to get back here.
+
+
+-- YOU NEED TO KNOW A LITTLE ABOUT GRAMMAR -----------------------------
+
+The following sections assume you know a bit about grammar. Nouns are
+words like "cat" "dog" "car" "number". Nounphrases are expessions like
+"the old man", "the dog that bit the cat", "each little lady who likes
+programming". We use NP as an abbreviation for "noun phrase".
+
+Verbs are words like "hit", "look", "choose", "put", "turn". Verb
+phrases, abbreviated VP, include things like "hit me", "look at the old
+man", "chose the book in the car", "put the dog in the car in the box".
+
+
+-- A SENTENCE IS AN 'NP' FOLLWED BY A 'VP' -----------------------------
+
+By joining an NP to a VP (which may contain embedded NPs) we can form a
+sentence (abbreviated S), for example:
+
+    [NP the cat] [VP bit the girl]
+    [NP the man in the car] [VP looked at the little dog]
+    [NP he] [VP jumped]
+
+
+-- THERE ARE OTHER SYNTACTIC CATEGORIES --------------------------------
+
+In addition to nouns and verbs we have used other types of words,
+including determiners (abbrevated DET), like: "the", "each", "some"
+adjectives (ADJ) like: "old" "little" prepositions (PREP) like: "in"
+"at" "on" "under"
+
+We've also used different sorts of verbs - transitive verbs which
+require a following NP (e.g. bit) and intransitive verbs which don't
+(e.g. jumped). Some verbs may allow or even require the use of an
+associated preposition, e.g.
+
+    jump over NP
+    put NP in NP
+    look at NP
+
+We've also seen that NPs and VPs can have different forms, so that
+sentences (S) can have different forms.
+
+
+-- TYPES OF SENTENCES CAN BE DESCRIBED WITH GRAMMARS -------------------
+
+The different forms of sentences can be described economically by means
+of a grammar and a lexicon. The grammar specifies the types of sentences
+phrases, etc. allowed, and the lexicon indicates which words can be used
+in different roles in the sentence. If you give the computer a grammar
+and a lexicon, it can show you what sorts of sentences it generates.
+First you have to define a grammar. Type in the following definition of
+a grammar, preferably using the editor to store it in a file (you can
+leave out the "comments" following three semicolons ";;;" - the three
+semi-colons tell POP11 to ignore the rest of that line. They are
+included here simply to help you see what's going on). We declare a
+variable MYGRAM which will be given a list of rules as its value. After
+the declaration, type in the list of rules (in this case a list of lists
+of lists!). NB don't forget '.P' in the file name.
+
+    vars mygram;
+    [                           ;;; start a list of rules
+        [s [np vp]]             ;;; a sentence is a NP then a VP
+        [np [snp] [snp pp]]     ;;; a NP is either a simple NP
+                                ;;; or a simple NP followed by
+                                ;;; a prepositional phrase PP
+        [snp [det noun]]        ;;; a simple NP is a determiner followed by
+                                ;;; a noun
+        [pp [prep snp]]         ;;; a PP is a preposition
+                                ;;; followed by a simple NP.
+        [vp [verb np]]          ;;; verphrase = verb followed by NP
+    ] -> mygram;
+    ;;; Complete the list of rules and assign it to mygram
+
+Type in that lot - taking care to get the square brackets right.
+
+
+-- WORDS HAVE CATEGORIES TOO -------------------------------------------
+
+Now you can type in a lexicon, to tell the system about nouns, verbs,
+prepositions, and determiners.
+
+    vars mylex;
+    [       ;;; start a list of lexical categories
+        [noun  man girl number computer cup battle room car]
+        [verb  hated stroked kissed teased married taught added]
+        [prep  in into on above under beside]
+        [det   the a every each one some]
+    ]  -> mylex;
+
+Again, take care to get the brackets right.
+
+
+-- NOW PRINT OUT THE GRAMMAR -------------------------------------------
+
+You can now print out your grammar, using the 'pretty-print' arrow thus:
+
+    mygram ==>
+
+
+-- AND THE LEXICON -----------------------------------------------------
+
+And print out your lexicon
+
+    mylex ==>
+
+
+-- HOW TO GENERATE SENTENCES -------------------------------------------
+
+Here's how you get the computer to generate sentences according to your
+grammar and lexicon (you will find that not all the sentences generated
+actually look like good English. That is a sign that the grammar is
+inadequate). Try:
+
+    generate(mygram, mylex) ==>
+
+You can make the computer generate many sentences:
+
+    repeat 20 times generate(mygram, mylex) ==> endrepeat;
+
+
+-- EXTEND THE GRAMMAR --------------------------------------------------
+
+You can now try extending the grammar and lexicon to generate a wider
+range of sentences. If you defined them in a file, edit the file. When
+you've had enough of generating sentences continue reading this file.
+
+
+-- A COMPLEX GRAMMAR IS PROVIDED FOR YOU -------------------------------
+
+Poplog includes a more complex grammar and lexicon, which can be used to
+produce some wierd sentences. You first have to load them by typing:
+
+    lib grammar1;
+    lib lexicon;
+
+Then generate 20 sentences at random:
+
+    repeat 20 times generate(grammar1, lexicon) ==> endrepeat;
+
+
+-- LOOK AT THE LIBRARY GRAMMAR -----------------------------------------
+
+If you want to see the library grammar, you can type
+
+    grammar1 ==>
+
+
+-- SOME RULES ARE RECURSIVE --------------------------------------------
+
+Notice that some of the rules are defined in terms of themselves, i.e.
+the grammar is recursive - e.g. the rule for NP.
+
+
+-- LOOK AT THE LIBRARY LEXICON -----------------------------------------
+
+You can also type out the lexicon provided in lib lexicon
+
+    lexicon ==>
+
+Note the different kinds of verbs.
+
+
+-- THE SETUP PROCEDURE -------------------------------------------------
+
+LIB GRAMMAR also provides a program called SETUP which enables you to
+transform your grammar and lexicon into a program which will analyse
+sentences to see if they are legal, according to the grammar. Start by
+typing
+
+    setup(mygram, mylex);
+
+You could put that in your file, after defining mygram and mylex. When
+you get the colon prompt, check that analysing procedures have been
+created, corresponding to the rules in mygram. E.g. type:
+
+    s =>
+    vp =>
+    np =>
+
+
+-- SEEING IF YOUR GRAMMAR 'ACCEPTS' A SENTENCE -------------------------
+
+Here is how you check whether your grammar will accept a sentence: put
+the sentence in a list, then apply the procedure S to it (remember, S
+was created by SETUP). Here is an example:
+
+    s([the girl kissed the man]) ==>
+    s([the computer added each number]) ==>
+
+Use words and phrases which fit your own grammar and lexicon. Notice how
+the procedure S creates a list of lists showing how the sentence is
+broken down into parts.
+
+
+-- TRY MORE SENTENCES --------------------------------------------------
+
+Try some different sentences.
+
+It's a chore to keep on having to type:
+
+    s([    ]) ==>
+
+LIB GRAMMAR defines a 'macro' abbreviation of three hyphens. To use it
+just type the words of the sentence after the three hyphens, that is you
+can type:
+
+    --- the computer kissed the girl
+
+instead of:
+
+    s([the computer kissed the girl]) ==>
+
+Here are some more examples of the use of the three hyphens:
+
+    --- the big number added the computer
+    --- the number added every computer
+
+It's important that you put a space after ---.
+
+The response <false> means that the sentence was not acceptable to the
+analysing procedures.
+
+
+-- SOME EXAMPLES WITH PREPOSITION PHRASES ------------------------------
+
+Try some examples with prepositional phrases, for example:
+
+    --- the man in the car kissed the cup
+    --- the computer hated every number in the room
+
+
+-- USING 'DONOUNS' -----------------------------------------------------
+
+To extend the power of the system type:
+
+    true -> donouns;
+
+You can then use unknown nouns and they will be accepted by the program if
+the context is suitable, e.g.
+
+    --- the fozzle teased every grumpet
+
+
+-- USE TRACE TO FIND OUT MORE ------------------------------------------
+
+You can see in more detail what is going on if you trace your
+procedures. This will show you that in order to get an analysis, the
+computer tries all sorts of guesses as to what should be coming next,
+which fail (result is <FALSE>), before it gets the right one. So this is
+not a very intelligent language analysing system. Try:
+
+    trace s vp np snp pp verb noun prep det;
+    --- the girl hated the man in the car
+
+Beware, you'll get a lot of printing!
+
+
+-- TRACING GIVES MORE INFORMATION IF THE SENTENCE IS UNACCEPTABLE ------
+
+You can also see what happens when an unacceptable sentence is provided. The
+program makes lots of attempts, but they don't lead anywhere:
+
+    --- the big cup in the room hated the computer
+
+    --- each number added the car in the green room
+
+
+-- HOW TO TURN OFF TRACING ----------------------------------------------
+
+You can suppress the amount of printout by untracing the procedures
+
+    untrace ;
+
+Try extending mygram and mylex so that they will accept noun phrases
+with adjectives, e.g. "the red car", "the angry little girl". E.g.
+extend the lexicon with a list something like
+
+    [adj  big red angry little happy]
+
+You'll also need to extend the rule for snp (simple noun phrase) in
+mygram.
+
+
+-- TRY TO ALLOW SEVERAL ADJECTIVES -------------------------------------
+
+Can you also extend the grammar so that it will accept several
+adjectives in a row before a noun, e.g.
+
+    the happy little man
+    the old old old car
+
+-- TRY TO STOP THE PRODUCTION OR ACCEPTANCE OF "STUPID" SENTENCES -----
+
+The grammar and lexicon given above allow some quite silly sentences to
+be produced, using -generate-, or to be analysed after using -setup- to
+create parsing programs. Try modifying the grammar and lexicon so as
+to constrain the "grammatical" sentences to be more sensible.
+
+-- SUMMARY -------------------------------------------------------------
+
+LIB GRAMMAR makes available the procedures SETUP and GENERATE.
+LIB LEXICON defines the lexicon LEXICON, and LIB GRAMMAR1 defines ther
+grammar GRAMMAR1.
+
+You can parse some more complex sentences if you do
+
+    lib grammar2;
+    lib lexicon;    ;;; unless done previously
+    setup(grammar2, lexicon);
+
+Print out GRAMMAR2 and LEXICON (using "==>" and then see if you can work
+out what sorts of sentences will be accepted and parsed, e.g.
+
+    true -> donouns;
+    setup(grammar2, lexicon);
+    --- he put a big dog into each car
+    --- he smiled at every man who thought he liked her
+
+Try more of your own.
+
+Further TEACH files: WHYSYNTAX, ISASENT.
+
+Note for advanced programmers:
+
+There is an extension to LIB GRAMMAR called LIB FACETS which enables you
+to associate semantic rules (i.e. meaning rules) with a grammar. For
+details see HELP * FACETS.
+
+
+--- C.all/teach/grammar ------------------------------------------------
+--- Copyright University of Sussex 1987. All rights reserved. ----------

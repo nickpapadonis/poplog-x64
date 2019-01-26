@@ -1,0 +1,590 @@
+TEACH  RIVERCHAT                              Aaron Sloman November 1982
+
+=== TALKING ABOUT THE RIVER WORLD ======================================
+
+This unit assumes that you have already been through TEACH RIVER and that
+you recall the puzzle about getting the man, the fox, the chicken, and the
+grain safely across the river. The facilities in LIB RIVER allow you to do
+this by giving POP-ll commands such as
+
+        putin([fox]);
+        getin();
+        crossriver();
+
+Wouldn't it be pleasanter to give the instructions in English? In fact
+that is not too difficult, provided that you write a procedure which will
+translate English sentences into POP11, much as the POP11 system
+translates commands in its language into the 'machine code' of the
+computer. We can do this using MATCHES (see TEACH MATCHES) and the
+database procedures (see DATABASE).
+
+--- SIMPLIFY THE TASK --------------------------------------------------
+
+ELIZA will acccept almost any English sentence and say something in
+response. But ELIZA doesn't really understand anything. The sentences are
+not taken as relating to anything outside themselves. Giving a program the
+ability to really understand unrestricted English is a truly MASSIVE task.
+The same applies to any other 'natural' language. But by restricting the
+range of things that can be said one can make the task manageable, and
+show how the resources of POP11 might be used for a really useful purpose.
+
+One restriction has already been implied. We allow the program to talk
+only about the world of the river puzzle. (You could choose another
+simplified world, and perform a similar task, e.g. a "world" consisting of
+places, people who may need to be transported between places, and a
+collection of vehicles of limited capacity.)
+
+A second simplifying restriction concerns the variety of linguistic forms.
+English, and other natural languages, admit a very complex variety of
+linguistic structures, as illustrated by this very sentence which has many
+parts, interrelated in quite complex ways. To avoid having to deal with
+the full complexity of English we can restrict ourselves to a small set of
+grammatical forms, and use MATCHES to recognise them.
+
+--CHOOSING A MANAGEABLE SYNTAX-------------------------------------------
+
+Suppose we choose to allow the following forms of sentence, where x refers
+to an object, p to a place and rel to a relation e.g. "at" or "in" or
+"on". Then we may want our conversational program to understand the
+following forms of sentence:
+
+        1.  the ??x is ??rel the ??p
+        2.  where is the ??x
+        3.  what is ??rel the ??p
+        4.  is the ??x ??rel the ??p
+        5.  put the ??x ??rel the ??p
+
+
+
+How should the program respond to each of these forms? Before reading on you
+should try writing down your own ideas.
+
+We shall treat each case separately.
+
+--ASSERTIONS---------------------------------------------------------------
+
+Suppose you assert
+
+        the fox is in the boat
+or
+        the man is at the left bank
+
+the computer should check if it already knows the location of the thing
+referred to. If it does and the assertion is not correct, the computer could
+print out something like:
+
+        ** [no the fox is on the right bank]
+
+If the assertion gives new information, then it could be added to the
+database, in some suitable format. The computer could then say simply
+
+        ** [ok]
+
+--QUESTIONS---------------------------------------------------------------
+
+Three forms of questions were suggested above, for exmaple
+
+        Where is the boat
+        What is at the left bank
+        Is the fox in the boat
+
+In every case, the computer should use PRESENT or LOOKUP to find the answer
+and print out something suitable. Later you could extend the program to
+include more forms of questions, such as
+
+        How many things are ??rel the ??p
+            (e.g. how many things are in the boat)
+        Are the ??x and the ??y in the sample place
+
+N.B. The POP11 matcher gets confused if a list ends with a question mark, so
+we'll assume that final question marks don't have to be typed in. (There are
+ways of overcoming this problem, but they are not worth bothering about for
+this exercise.)
+
+--COMMANDS-------------------------------------------------------------------
+
+These are like:
+
+        put the man in the boat
+        put the fox at the left bank
+
+The computer should check that the conditions for carrying out the instruction
+are correct, and either print out
+
+        ** [I can't because....]
+
+or do it and print out
+
+        ** [the ^^x is now ^^rel the ^^p]
+
+or something similar.
+
+TEACH RIVER2 explains how you can write programs to check preconditions.
+However, it proposes that a MISHAP should occur when an action cannot be
+performed. For present purposes we will want procedures which return TRUE if
+the action can be performed, otherwise FALSE, instead of producing a mishap.
+This is like the difference between PRESENT and LOOKUP, described in
+TEACH DATABASE. (See HELP DATABASE for a shorter summary.)
+
+--CONTROLLING THE INTERACTION---------------------------------------------
+
+We need a master program (e.g. called CHAT) to read in what you type in, call
+the appropriate procedures, then print out the corresponding response. It
+should do this repeatedly, until you type "bye". READLINE can be used to read
+in a list of words. We assume that a procedure, called INTERPRET, will
+interpret and respond to them, calling appropriate procedures to manipulate
+the database.
+
+Something like the following format should do:
+
+    define chat();                      ;;; no inputs, no results
+        vars list;
+        repeat forever                  ;;; but see 'quitif' below
+            [please type something]=>
+            readline()->list;
+            quitif(list = [bye]);        ;;; stop loop if condition is true
+            interpret(list) =>
+        endrepeat;
+        [bye then] =>
+    enddefine;
+
+QUITIF makes the REPEAT loop stop if its condition is TRUE. (See HELP
+QUITLOOP).
+
+You could put all that into a file, called CHAT.P, and for preliminary testing
+include a simplified version of INTERPRET, e.g.
+
+        define interpret (list) -> out;
+                [message received] -> out
+        enddefine;
+
+This will always give the same response, and will not change the database.
+But it can nevertheless be used for testing chat.
+Try all that, then test your program:
+
+        :trace chat readline interpret;
+        : chat ();
+
+Make sure that it stops when you type BYE. If it doesn't, e.g. because you've
+mistyped something in CHAT, you can always interrupt with cTRL-C.
+
+--DEFINING INTERPRET PROPERLY------------------------------------------------
+
+We can now move to a 'real' version of INTERPRET. It's job is
+    (a) take in the list of word typed at the terminal
+    (b) work out what it means
+    (c) perform some appropriate internal action
+    (d) create a suitable response in the form of a list of words, to be
+        the result of INTERPRET, left on the stack.
+
+The result will be printed out by CHAT, but that is no concern of INTERPRET.
+
+(b) (c) and (d) can take different forms, depending on what sort of list is
+given as input.
+
+Notice how important it is to have a clear idea of what you want a procedure
+to do before you start work on it. You can change your ideas as a result of
+trying out preliminary forms. And you need not have thought about ALL the
+cases, so long as you are clear about whether it takes any inputs, and if so
+how many, whether it produces results, and for at least some of the forms of
+inputs what it is to do with them and what result it should produce. When
+explaining one of your procedures in a report you should be able to say all
+that clearly without showing a single line of the program.
+
+Don't try to define all of INTERPRET at once. Instead, as you add extra cases
+test it to make sure it works.
+
+We can start by sketching the general form of the procedure:
+
+    define interpret(list) -> out;
+        if list matches .... then
+                ....            -> out
+        elseif list matches ... then
+                .... ->
+                ....
+        else
+                [sorry I dont understand] -> out
+        endif
+    enddefine
+
+In other words, it should simply use a single multi-branch conditional
+instruction. (See TEACH IF.)
+
+We can make each condition corrrespond to one of the forms of sentence
+sketched above, using MATCHES to do the recognising. So the procedure will
+need some local variables. Put in the declaration:
+
+        vars x, rel, p;
+
+Now fill out the first condition, to cope with assertions like
+    the fox is in the boat
+    the man is on the left bank
+
+Let's assume there is a procedure, called CHECKFACT, to be defined later
+(notice our 'top down' programming style), which will deal with such
+assertions.
+
+        if list matches [the ??x is ??rel the ??p] then
+            checkfact (x, rel, p) -> out
+        else
+
+etc.
+
+This requires a procedure called CHECKFACT which takes a list with an object
+name (produced by ??x), a list with a relation name (from ??rel) and a list
+with a location name(from ??p). It should examine or alter the database, if
+necessary, and produce an appropriate reply. There are different ways of
+defining CHECKFACT. E.g. it could handle three conditions
+    (a) It already know the fact. Then say so
+    (b) It knows something inconsistent with the alleged fact. Then correct
+        the user.
+    (c) Otherwise add the new fact to the database.
+
+For example the definition of CHECKFACT could be something like:
+
+        define checkfact (thing, rel, place) -> out;
+            vars info;
+            if present ([^^thing ^^rel ^^place]) then
+                [I know that already] -> out
+            elseif present ([^^thing ??info]) then
+                [no it is ^^info ] -> out
+            else
+                add ([^^ thing  ^^rel ^^ place]);
+                [OK I have noted that] -> out
+            endif
+        enddefine;
+
+Put that in your chat file, then test it.
+
+You can then test the new procedure, along the following lines:
+
+        : [] -> database;
+        : checkfact ([fox], [in], [boat]) =>
+        ** [OK I have noted that]
+        : checkfact ([man], [at], [left bank]) =>
+        ** [OK I have noted that]
+        : checkfact ([fox], [at], [left bank]) =>
+        ** [no it is in boat]
+        : checkfact ([joe bloggs], [in], [boat]) =>
+        ** [OK I have noted that]
+
+If that works you can complete the definition of INTERPRET given above, then
+test it:
+
+        :interpret ([the fox is in the boat]) =>
+        ** [I know that already]
+        :interpret ([the fox is at the left bank]) =>
+        ** [no it is in boat]
+
+If that all works you can then test CHAT. If all is well you'll get a
+dialogue something like:
+
+    :chat();
+    ** [please type something]
+    ? the man is at the left bank       ;;; readline prompts with "?"
+    ** [I know that already]
+    ** [please type something]
+    ? the goat is at the left bank
+    ** [OK I have noted that]
+    ** [please type something]
+    ? the goat is in the boat
+    ** [no it is at left bank]
+    ** [please type something]
+    ? bye
+    ** [bye then]
+
+Try that, but first
+    : trace interpret checkfact;
+
+--QUESTIONS---------------------------------------------------------------
+
+Your procedure INTERPRET should, by now look something like this:
+    define interpret(list) -> out;
+        vars x rel p;
+        if list matches [the ??x is ??rel the ??p] then
+            checkfact (x, rel, p) -> out
+        else
+            [dont understand] -> out;
+        endif
+    enddefine;
+
+If you didn't succeed in making your own version work, try that, with CHAT.
+
+Now add another condition to INTERPRET to deal with a question of the first
+form:   WHERE  IS THE ?X
+
+Let us assume we can define a procedure called WHEREIS which will take the
+name of a thing, and find a response to print out.
+
+        elseif list matches [where is the ??x] then
+            whereis (x) -> out
+
+This needs a procedure called WHEREIS. You may be able to define this before
+reading on. If you find your definition doesn't work, read on.
+
+-- DEFINING WHEREIS ---------------------------------------------------------
+
+        define whereis (thing) -> out;
+            vars info;
+            if present ([^^thing ??info]) then
+                [the ^^thing is ^^info] -> out
+            else [I dont know where it is] -> out
+            endif
+        enddefine;
+
+Test this procedure, then test INTERPRET
+
+    : interpret ([where is the fox]) =>
+    ** [the fox is in boat]
+    :interpret ([where is the old man]) =>
+    ** [I dont know where it is]
+
+then check that chat still works and allows you to alternate assertions and
+questions.
+
+-- MORE QUESTION FORMATS ----------------------------------------------------
+
+For the other forms of questions you can extend INTERPRET. The following is
+a fairly obvious extension, requiring a procedure called FINDTHINGS.
+
+        elseif list matches [what is ??rel the ?? p] then
+            findthings (rel, p) -> out
+
+Try extending INTERPRET like this, and defining FINDTHINGS.
+
+You could use PRESENT in FINDTHINGS, but it will find only ONE thing at the
+place. To find ALL the things you can use a built-in procedure called WHICH
+(see TEACH WHICH). WHICH gives you a list of all the things in the database
+which satisfy the pattern you give it - which is just what you need in
+FINDTHINGS.
+
+
+When you have defined FINDTHINGS,  test it out, making sure it always
+produces an appropriate list, then check that INTERPRET and CHAT works
+properly with it. Perhaps thus:
+    :chat();
+    ** [please type something]
+    ? what is at the right bank
+    ** [nothing is at the right bank]
+    ** [please type something]
+    ? what is in the boat
+    ** [[fox]]
+    ** [please type something]
+    ? what is at the left bank
+    ** [[goat] [man]]
+    ** [please type something]
+    ? where is the fox
+    ** [the fox is in boat]
+    ** [please type something]
+    ? where is the moon
+    ** [I dont know where it is]
+
+Try to define an appropriate version of FINDTHINGS, and extend INTERPRET so
+that it invokes the new procedure when appropriate.
+
+-- HOW INTERPRET LOOKS NOW --------------------------------------------------
+
+In case you have not managed to get all that to work, this is what your
+definition of INTERPRET could look like now.
+
+    define interpret(list) -> out;
+        vars x rel p;
+        if list matches [the ??x is ??rel the ??p] then
+            checkfact (x, rel, p) -> out
+        elseif list matches [where is the ??x] then
+            whereis(x) -> out
+        elseif list matches [what is ??rel the ??p] then
+            findthings(rel,p) -> out
+        else
+            [dont understand] -> out;
+        endif
+    enddefine;
+
+
+And this is how FINDTHINGS could be defined:
+    define findthings(rel,p)->out;
+        vars x;
+            which("x",[[??x ^^rel ^^p]])  -> out;
+            if out = [] then
+                [nothing is ^^rel the ^^p] -> out
+            endif;
+    enddefine;
+
+There are two things to notice about the arguments for WHICH. The first
+argument is a WORD (because of the WORD QUOTES " ... ") - it is the name
+of the query variable you are interested in. WHICH returns a list of all the
+x's which fit the pattern. If you were interested in more than one variable,
+you would put the words in a list, and then you wouldn't need the quotes.
+For instance
+
+        which([x y],[[??x on ??y]])
+
+would have a result which is a list of pairs (object and location). It
+might look like this:
+
+        [ [man boat]  [chicken lb] [grain lb] [fox rb] ]
+
+The other thing to notice is that the pattern has TWO sets of brackets
+round it. This is because WHICH can be given more than one pattern if
+desired - you give it a list of patterns and it tries to satisfy them
+all simultaneously. Here we only have one pattern, so we have a list
+with one thing in it, a pattern (which happens to be a list).
+
+
+
+--DECLARING PROCEDURE NAMES-----------------------------------------------
+
+You may find that when you compile your file you keep getting warning
+messages about "declaring variables", e.g. interpret, checkfact, whereis,
+etc.
+
+To prevent this, and reduce the load on the computer, you can put in a
+declaration at the top of the file, for all the procedure names defined lower
+down. E.g.
+
+        vars chat, interpret, checkfact ...;
+
+POP-11 treats names of procedures as variables (which is why yu can redefine
+a procedure during testing and developing of your programme and the other
+procedures will immediately access the new one).
+
+Usually procedure names are defined as global variables, instead of being
+local to another procedure. This makes it easy to test all the procedures
+separately, and also allows you to trace them.
+
+It is a good idea, while developing a program, to put a trace command for all
+your procedures, at the END of the file, after they have been defined. E.g.
+
+        trace chat, interpret, etc...;
+
+When everything is working perfectly you can remove the trace command.
+
+You may feel you have had enough for now, and not want to carry on. The
+remainder of this file introduces some technicalities which are useful with
+some of the more advanced sentence analysing programs, e.g. TEACH ISASENT.
+
+If you do stop now, should should write a report on your program. See TEACH
+REPORTS.
+
+-- STILL MORE QUESTIONS -----------------------------------------------------
+
+A more complicated extension is required to deal with questions like
+        is the fox in the boat
+
+E.g. chat should be able to cope with:
+    : chat();
+    ** [please type something]
+    ? is the man in the boat
+    ** [no it isnt]
+    ** [please type something]
+    ? is the fox in the boat
+    ** [yes it is]
+
+You might try extending INTERPRET using a procedure called something like
+TRUEFALSE, thus:
+        elseif list matches [is ??x ??rel the ??p] then
+            truefalse(x, rel, p) -> out
+
+Defining TRUEFALSE should be fairly straightforward using PRESENT. But there
+is a snag in the above pattern given to MATCHES.
+
+-- A COMPLICATION WITH "??" AND THE MATCHER --------------------------
+
+For reasons which may be clear if you have fully understood how "??" works
+(see TEACH MATCHES, and POPNOTES), you cannot expect patterns with two "??"
+variables in succession to behave sensibly. So for form 4 we could not
+usefully use a pattern
+
+        [is the ??x ??rel the ??y]
+and expect a sensible analysis of
+        [is the fox in the boat]
+
+This is because the matcher will not know how to divide up
+        "fox in"
+
+sensibly between ??x and ??rel, since "??" means match ANY number, including
+NONE, ONE, or more. So if you try:
+
+    : [is the fox in the boat] matches [is the ??x ??rel the ??y] =>
+
+and then print out X and REL, you'll find that one of them is the empty list
+and the other gets a list with both words: [FOX IN].
+
+To get round this we can make use of 'restriction procedures' to control the
+matcher. After a pattern variable you can put a colon and the name of a
+restriction procedure which decides whether the object being assigned to the
+variable is acceptable. Thus, suppose we define the following procedure to
+recognise relation names, using the POP-11 procedure MEMBER in the obvious
+way:
+
+    define relation(list) -> result;
+        ;;; recognise a list containing a relation name
+        if member(list, [[at] [on] [in] [next to]]) then
+            list -> result      ;;; don't use TRUE -> RESULT. See below
+        else
+            false -> result
+        endif
+    enddefine;
+
+We can use this procedure RELATION to restrict the match in:
+
+   : [is the fox under the boat] matches [is the ??x ??rel:relation the ??y]=>
+   ** <false>
+
+I.e. "under" was not in the list used by RELATION to recognise relation
+names. Whereas:
+
+   : [is the fox in the boat] matches [is the ??x ??rel:relation the ??y] =>
+   ** <true>
+
+Now check that the values given to X and REL are correct
+    : x=>
+    ** [fox]
+    : rel=>
+    ** [in]
+
+When the matcher uses the restriction procedure (after ":" following a
+pattern variable) to check that the value being assigned to the variable is
+acceptable, it expects the procedure to return either FALSE, or the new value
+to be assigned to the variable. (This turns out useful in ways illustrated in
+TEACH ISASENT.) In the present case, we want the variable REL to get the list
+of corresponding words. So our procedure RELATION, above, does:
+    list -> result
+
+rather than
+    true -> result
+
+The latter would have made REL have the value TRUE rather than [IN].
+
+We could define restriction procedures to recognise OBJECTs, e.g. using:
+    member(list, [[man][fox][chicken][grain][boat]])
+
+and LOCATIONs, using:
+    member(list, [[left bank][right bank][boat]])
+
+--YOU COULD STOP HERE----------------------------------------------------
+
+The procedures sketched so far show how you can create an interactive data
+base which accepts new facts and answers questions.
+
+Having done this it is a good idea to write a report on what you have done,
+using RECORD; (see TEACH RECORD) to produce examples of the program at work).
+
+For many students this will be an adequate task. If you wish to be more
+adventurous you can try to extend INTERPRET to deal with commands, like
+
+        [put the ??x ??rel:relation the ??p]
+
+defining a procedure called perhaps ACHIEVE (thing, rel, place). This
+procedure could use procedures analogous to those defined in TEACH RIVER2,
+except that instead of a mishap, you could make them produce an explanation
+of why the task cannot be done. Don't be surprised if you find this tricky.
+
+--FURTHER WORK-------------------------------------------------------------
+
+For an introduction to the problems of defining programs with a deeper grasp
+of English grammar, see
+
+        TEACH GRAMMAR;
+        TEACH WHYSYNTAX;
+        TEACH ISASENT;

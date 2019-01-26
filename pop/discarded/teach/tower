@@ -1,0 +1,490 @@
+TEACH TOWER                 Chris Mellish and Aaron Sloman, October 1981
+
+-- INTRODUCTION: DEPTH-FIRST SEARCHING ---------------------------------
+
+The object of this demo is to introduce you to some problems of
+representing search strategies. At the same time, you will learn more
+about about manipulating lists. The techniques described here are
+relevant to a wide variety of applications, including the problems of
+parsing sentences to find out if they are grammatical. We start with a
+very simple problem solver, which you can extend later. Before
+continuing, make sure you have read TEACH *POPSUMMARY, *POPNOTES and
+*LISTSUMMARY. You may also find it useful to try TEACH *LISTS, *FOREACH
+*MATCHES, *MATCHES2, *MOREMATCH; if you don't recall how to use the
+matcher in loops.
+
+First the simple problem. Suppose you are given a list of numbers, and a
+target number, and the task of finding a subset which add up to the
+target. How would you do it? Try, with the following combinations:
+
+        LIST            TARGET
+        [1 2 3 4]         8
+        [1 4 7 9]         3
+        [2 2 2 2 2 2]     9
+
+
+(Incidentally, this problem is theoretically like the problem of
+building a tower of a given height, with a set of blocks of variable
+sizes. In practice, our powerful visual system enables us to treat the
+latter as a different sort of problem.)
+
+The simplest approach to a problem of this kind is "trial and error".
+The least intelligent version of this is blindly to go on trying random
+selections of numbers from the list. You may then try the same
+combination many times, which is wasteful. A slightly more sensible
+approach is to think of the set of possible combinations as a sort of
+'space' through which you can move, keeping track of your path. This is
+a bit like searching a maze. You may go down 'blind-alleys' and have to
+back-track. We'll introduce an approach known as 'depth-first' search.
+However, before you read any further, write down in English what
+strategy YOU would use to solve this problem.
+
+Imagine that you are the computer and have to try and find a subset of
+[6 5 7 4] that adds up to 9. To do this, you must select some of the
+numbers that belong to this list. You might keep track of what you are
+doing by keeping two lists of numbers - a "sofar list" containing those
+you have selected so far and an "available list" containing those
+numbers that you might select in addition. To start off, the "list so
+far" will just be [], but the "available list" will contain all the
+numbers. Since the numbers in [] do not sum to 9 (they sum to 0), you
+haven't solved the problem yet. So you must try to extend the "sofar
+list" until the numbers in it really do add up to 9. To extend the
+"sofar list", you can use any of the numbers in the "available list" [6
+5 7 4]. One thing you could do is make some decision about what numbers
+to select next.
+
+It might be any numbers out of 6, 5, 7 and 4. If you decided to select
+6, this would make the new "sofar list" [6] and the new "available list"
+[5 7 4]. Since the "sofar list" still doesn't sum to 9, you would then
+have to do some further work. You could also make a decision about some
+numbers which you will resolve NEVER to select. Again, you can pick any
+out of 6, 5, 7, and 4. If you picked 7, this would amount to giving
+yourself a new "sofar list" [] and new "available list" [6 5 4].
+
+There seem to be so many ways to go forward here. The only trouble is
+you don't know which one to try. There are several candidate "paths" to
+a solution, but you don't know which, if any, will work.
+
+-- KEEPING TRACK OF PROGRESS -------------------------------------------
+
+If you try a path and it doesn't work, you have to remember what to try
+next. At each "branch point" you then have the task of (a) making a
+selection and (b) recording alternatives in case you come back to that
+branch point later. In searching a maze, the alternatives are "recorded"
+by the world itself, since they remain out there. In more abstract
+searching through a "symbolic space" you may have to build a description
+of the alternatives remaining. Some forms of unsuccessful
+problem-solving behaviour may be related to the difficulty of building
+and keeping track of such descriptions of alternatives to try later. How
+can we make the computer do this for our problem? First of all, how can
+we represent remaining alternatives?
+
+At any stage in the problem-solving process, your progress along the
+current path can be summarised by the following information:
+
+    - A "sofar list" waiting to be extended
+         (the numbers you have picked so far)
+    - An "available list" of possible remaining numbers
+
+We will say that this information defines a STATE in the problem solving
+process. From one state, you can proceed to several possible "next
+states", but you don't know in advance which of these will be
+productive. An alternative formulation of the original problem, in terms
+of states is as follows:
+
+    Find a sequence of states, each one leading validly to the next,
+    starting from an initial state:
+
+        Sofar list:          empty
+        Available list:      the list provided
+
+    and leading to a final state:
+
+        Sofar list:          a list which sums to the target
+        Available list:      some other list
+
+A state can easily be represented in the computer - it is just two
+lists. I.e. we can make a list of two lists represent a state, for
+instance [[7] [6 5 4]]. The answer to our earlier question about
+representing alternatives now follows easily(!?!), given a
+representation of the problem solving in terms of states. Alternatives
+to be tried at any point can be represented just by the possible states
+left to be explored. That is we make a list of two-element lists
+represent the set of alternatives, e.g.
+
+    [
+        [[6] [5 7 4]]
+        [[5] [6 7 4]]
+        [[7] [6 5 4]]
+        [[4] [6 5 7]]
+    ]
+
+Having made a list of possible next states, you will have to remember
+them, in case the one you choose doesn't work. In general, you may have
+previously remembered earlier possible choices. So you'll have to join
+the new set of choices on to the old set.
+
+We should now look in a bit more detail at how we can enumerate the
+possible "next states" following from a given state.
+
+-- ENUMERATING "NEXT STATES" -------------------------------------------
+
+Suppose we are half way through working on the tower problem, and we are
+considering the following state:
+
+    Sofar list:      [1 3]          (numbers selected so far)
+    Available list:  [5 2 8]        (numbers available to be selected)
+
+with the target 17. How are we to enumerate the next possible states
+(the places we might go from here)? We need to be able to do this so
+that, in case the first one doesn't work, we can then go and try the
+others. There are several ways we could look at the choices open to us:
+
+    1) We can choose any number from the available list, leaving
+    the rest as available to be chosen after it. The choice is
+    then which number to pick. Whichever it is, we will put it in
+    a new sofar list, leaving all the remaining numbers as
+    possibilties for later selection. If we choose this method,
+    the possible next states are:
+
+    Sofar [1 3 5]           Sofar [1 3 2]           Sofar [1 3 8]
+    Avail [2 8]             Avail [5 8]             Avail [2 5]
+
+    (As pointed out below, this will cause the same combinations
+    of numbers to be tried more than once, e.g. 1 3 5 2 and 1 3 2
+    5. The next alternatives attempt to avoid this.)
+
+    2) We can decide whether or not we are going EVER to pick the
+    FIRST number (5) in the available list. The choice is then
+    "yes" or "no" for this number. In the second case the 5 is
+    discarded forever. We call these two possible next states the
+    "with" and "without" states.
+
+    The "with"  state will have the 5 in the sofar list, to
+    ensure that it is considered in all possible descendents of
+    that state, so it is removed from the available list. The
+    "without" state will have it in neither. The two possible
+    next states are therefore :
+
+        Sofar [1 3 5]           Sofar [1 3]
+        Avail [2 8]             Avail [2 8]
+
+    (Convince yourself that by branching out from these two, you
+    will not miss any possible combinations.)
+
+    3) We have three ways of choosing which number in the
+    available list will be the FIRST that we will ever pick. Call
+    the three possible choices, A, B, C. Call A the state in
+    which 5 is chosen as the first number. The remaining numbers
+    will be considered along with it in later states. Call B the
+    state in which 2 is chosen first. There is no point leaving 5
+    in the available list to be considered with 2 later, since
+    that is covered in the descendents of state A. But we can
+    leave the 8 to be considered in descendents of state B.
+    Similarly in state C we choose the 8 as the first thing after
+    [1 3]. And now there is no point leaving the 5 and 2 to be
+    considered later, because these combinations are included in
+    descendents of states A and B. So the three possible next
+    states, A, B and C are:
+
+    Sofar [1 3 5]           Sofar [1 3 2]           Sofar [1 3 8]
+    Avail [2 8]             Avail [8]               Avail []
+
+    (Again, convince yourself that no combination is lost by
+    this. This method, like 2, depends on the fact that addition
+    is commutative, i.e. the order in which numbers are added
+    doesn't matter.)
+
+-- CHOOSING A METHOD ---------------------------------------------------
+
+Assuming that the way you remember alternatives ensures that every
+alternative you generate can eventually be tried, it does not matter
+greatly how you think about next states. However, the following must be
+true, or you will find yourself failing to find solutions where they
+exist.
+
+    If a solution can be found starting from a given state (and
+    the state does not already represent a solution), then it
+    must be possible to find a solution starting from at least
+    one of the "next states" that we consider.
+
+This principle holds for all three of the ways of thinking about next
+states (and no doubt for various other ways that we have not even
+considered). Why is this? See if you can work this out for yourself.
+
+Although all these methods of enumerating alternatives will lead to
+solutions being found where they exist, they are not necessarily equally
+fast. For instance, the first method will lead to more states being
+generated than is strictly necessary. The following diagram shows two
+stages of "next states" being generated by the first method.
+
+
+                                   *--- S [1 3 5 2]  (state (A))
+                                   |    A [8]
+                 *--- S [1 3 5] -- |
+                 |    A [2 8]      |
+                 |                 *--- S [1 3 5 8]
+                 |                       A [2]
+                 |
+                 |                 *--- S [1 3 2 5]  (state (B))
+                 |                 |    A [8]
+    S [1 3]   -- *--- S [1 3 2] -- |
+    A [5 2 8]    |    A [5 8]      |
+                 |                 *--- S [1 3 2 8]
+                 |                      A [5]
+                 |
+                 |                 *--- S [1 3 8 5]
+                 |                 |    A [2]
+                 *--- S [1 3 8] -- |
+                      A [5 2]      |
+                                   *--- S [1 3 8 2]
+                                        A [5]
+
+States (A) and (B) generated by this method are "equivalent" from the
+point of view of solving the problem. This is because they have
+identical "available lists" and the ORDER of the numbers that have
+already been selected makes no difference to what the total is. So there
+is really no point in investigating both of them. (You should be able to
+see two more pairs of equivalent states in the diagram).
+
+-- SPECIAL CASES -------------------------------------------------------
+
+For the rest of the handout, we will assume that the THIRD method above
+of enumerating next states is going to be used. That is, at each point
+you will make a decision about which is the first number that you will
+EVER select. However, although this is what you will do in general,
+there are some special cases that you must consider:
+
+    1) When the "sofar list" already sums to the target. In this
+    case, you've won - nothing more to do.
+
+    2) When the choice involves selecting from an "available
+    list" which is empty, but where the "sofar list" does not
+    have the desired sum. You have come down a path leading to a
+    dead end. You can abandon trying to continue from this state,
+    and go on to the next unexplored state, if any have
+    previously been recorded. If there are no more, the problem
+    is insoluble.
+
+If you keep a list of states to investigate, then at each stage, having
+chosen one of them to explore, you can put all its possible next states
+on the list. Once you have made a record that these new states are to be
+explored, there is no point in continuing to remember the state that
+they followed from, and so you can drop that from the list. The new
+states are added to your memory of alternatives you might have to try.
+You could choose one of the new states first, and only add the remainder
+to your memory. But we'll see later that by putting them all into the
+list of alternatives you allow the option of surveying the list to find
+the best of all the alternatives. This makes it easier to adopt
+different global search strategies in different versions of the program.
+However, if we just choose the first of the complete list of
+alternatives, and remove it, that is equivalent to choosing the first of
+the available numbers, and using the remainder to define alternatives to
+add to the memory, for later exploration.
+
+Choosing the first and saving the rest is the simplest strategy. It is
+approximately like the strategy of always choosing the left-most untried
+branch in a maze.
+
+-- PUTTING THIS INTO POP11 ---------------------------------------------
+
+Here is a program to solve the "sum of numbers" problem. The program
+uses the "list of alternatives to be tried" idea. The alternatives are
+represented as states you can get to via a path from the initial state.
+Each state is represented by a list whose first member is the "sofar
+list" and whose second member is the "available list". The list of
+alternative states will be updated at every branch point, by adding all
+the possible next states to the list. (Don't confuse the list of
+alternative states to be explored with the list of numbers available at
+each state, though the latter is used to generate the former.)
+
+Two subsidiary procedures are defined. The first, called NEXTSTATES, is
+to determine the possible next states for a state (give by an "available
+list" and a "sofar list"). The other, called SUMLIST, is to determine
+the sum of a list of numbers. This helps you decide whether you've
+solved the problem.
+
+The main procedure, TOWER, starts by initialising the memory list
+ALTERNATIVES. It puts on this list just one state to be explored - the
+initial state for the problem. In this state, the whole set of numbers
+is the "available list", and [] is the "sofar list". This is because at
+the beginning no numbers have been selected.
+
+   vars nextstates sumlist;                ;;; defined later
+
+   define tower(numbers,target);
+     vars alternatives, remainder, newalternatives, sofar, available;
+     [ [ [] ^numbers ] ] -> alternatives;
+
+     while alternatives matches [[?sofar ?available] ??remainder] do
+         [trying to extend ^sofar with ^available available]=>
+         if sumlist(sofar) = target then   ;;; Case 1
+             return(true)
+         elseif available = [] then        ;;; Case 2
+             remainder -> alternatives
+         else                              ;;; Case 3
+             nextstates(sofar,available) -> newalternatives;
+             [^^newalternatives ^^remainder] -> alternatives
+         endif
+     endwhile;
+     return(false)
+   enddefine;
+
+   define nextstates(sofar,available)->newalternatives;
+     vars next, remainder;
+     [] -> newalternatives;
+     while available matches [?next ??remainder] do
+         [^^newalternatives  [ [^^sofar ^next] ^remainder] ]
+             -> newalternatives;
+         remainder -> available
+     endwhile
+   enddefine;
+
+   define sumlist(list)->sum;
+     vars num rest;
+     0 -> sum;
+     while list matches [?num ??rest] do
+         sum + num -> sum;
+         rest -> list
+     endwhile
+   enddefine;
+
+Test the procedure:
+
+   tower([1 2 3 4], 8) =>
+   tower([1 3 2 4], 7) =>
+   tower([8 2 3 4], 6) =>
+   tower([2 2 2 2 2 2], 1) =>
+
+The messages printed out will show you what alternative "sofar lists"
+the program tries to extend in what order. Try TRACE SUMLIST; and TRACE
+NEXTSTATES; to get more information (see TEACH *TRACE for more
+information on tracing). You may be able to think of a way of making it
+behave less stupidly. For instance, the program tries extending "sofar
+lists" even if they already sum to more than the target. You could
+prevent these ever being extended. This will prevent a lot of very
+stupid searching done by this program, as you'll see if you do the
+problem:
+
+   tower([2 2 2 2 2], 1) =>
+
+The 'tower' procedure searches for a sequence of moves which will lead
+to a winning state. (I.e. the state where the "sofar list" sums to the
+target). At each intermediate state there are several alternative moves
+(according to which element of the list is used next). It puts each on
+the list of alternatives to be tried. In fact, the program puts the new
+alternatives on the FRONT of the list. This means that, once it has
+decided to try for a particular number as the first of a subset, it will
+explore every state following from that (and the states following from
+that ...) before trying for another number as the first. You can see
+this by following the messages printed by the program. Try the problem:
+
+   tower([1 2 3 4],11) =>
+
+and note how it first tries all possible extensions of [1] and only then
+looks at extensions of [2]. Similarly, when it is looking at extensions
+of [1 3], it considers all such extensions before going on to look at [1
+4]. This is an example of a DEPTH FIRST search strategy. You will meet
+many more examples.
+
+More generally, the control structure for a depth first search can be
+implemented something like this (using a mixture of POP11 and English to
+show the main ideas):
+
+   define search(state);
+     if NO MOVES LEFT then
+         RETURN FAILURE
+     elseif SOLVED then
+         RETURN SUCCESS
+     else
+         for EACH POSSIBLE NEXT STATE DO
+             if SEARCH(NEXT STATE) SUCCEEDS then
+                 RETURN SUCCESS
+             endif
+         endfor;
+         RETURN FAILURE
+     endif
+   enddefine;
+
+-- EXERCISES TO THINK ABOUT --------------------------------------------
+
+Write a short explanation of why the TOWER program does in fact follow a
+depth-first search strategy, as described in this "program".
+
+Write a short description comparing the task of searching a maze with
+solving the "sum of numbers" problem. What in the "sum of numbers"
+problem corresponds to: a position in the maze? the set of passages
+leading away from some position? the path that has been followed so far?
+a dead end? the centre of the maze? the starting position?
+
+See if you can modify the tower program so that if it succeeds it
+returns a list of the numbers found to add up to the target. If it
+fails, it should still return FALSE.
+
+Alter the program so that it finds all the solutions instead of stopping
+when it finds the first one. For instance, there are two ways of making
+the sum 9 from the list [3 4 6 5]. You can make the change fairly simply
+by just adding solutions found onto a list kept in a global variable,
+SOLUTIONS. However, you will have to alter the control flow of the
+program, so that it behaves differently whenever a solution is found.
+
+One problem with the TOWER program is that, when it considers extensions
+to a given "sofar list", the numbers in the original list are repeatedly
+added up by SUMLIST for each extension. Change the program to avoid this
+by keeping a "total so far" or a "remainder to be achieved" with each
+state.
+
+This is a hard exercise: If you work through some examples with the
+tower program, for instance, tower([2 2 2 2],1), you will see that the
+program sometimes repeats itself, exploring the same blind alley several
+times. Can you alter the program so that it remembers previously
+unsuccessful states in the database and uses this memory to avoid
+exploring them again?
+
+Write a program to carry out depth-first search in some other area. For
+instance, if you have encountered the DISCRIM demo, write a program to
+see if a particular animal is represented in a discrimination net. The
+program will have to search down the tree looking for the animal's name.
+
+-- ASSIGNMENT ----------------------------------------------------------
+
+Type in and test this program. Make sure you understand how it works.
+Bear in mind that being able to EXPLAIN how programs work is almost more
+important than being able to create them.
+
+Try changing the WHILE condition in TOWER so that each time the RIGHT
+HAND state is chosen for exploration (ie the last alternative in the
+list). Write a short report (100 to 300 words) on the difference this
+makes (the new strategy is called BREADTH FIRST SEARCH). Compare this to
+changing the order in which the "new alternatives" list is built. Test
+the programs on a wide range of examples, including:
+
+   tower([1 1 1 1 5 6 1 7 8],5) =>
+   tower([1 2 3 4 5],6).
+
+Modify TOWER so that it does not further explore states where the "sofar
+list" already sums to more than the target. The easiest way is to add a
+fourth case to the loop in TOWER, using SUMLIST. Would it be better to
+change NEXTSTATES so that it weeded out of AVAILABLE numbers that were
+too big? NEXTSTATES would then need an extra input, TARGET. Hand in a
+report showing how this modified version works compared with the
+original. Choose test examples to bring out the differences.
+
+Is any version of TOWER remotely like the strategy a person might use?
+How could we find out? Why do some strategies impose a bigger memory
+load than others?
+
+-- BACKGROUND READING --------------------------------------------------
+
+    Raphael, Chapter 3.
+
+    Winston, Chapter 4.
+       (Both of these go rather deeper than you strictly need)
+
+    Bundy, 1.2 - 1.4
+       (Looks at search in another domain - the "Missionaries and
+            Cannibals" problem).
+
+    Boden: look up 'search' in the index!
+
+-----<Copyright University of Sussex 1987.  All rights reserved.>-------

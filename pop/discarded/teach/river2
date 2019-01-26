@@ -1,0 +1,471 @@
+TEACH RIVER2                                              A. SLOMAN NOV 1982
+
+            USING DATABASE TO REPRESENT A SIMPLE WORLD
+            ==========================================
+
+This file introduces techniques for simulating a simple world in the
+computer. States of the world are represented in propositions, which are
+stored in the database. Changes in the world are represented by removing and
+adding propositions. The 'laws' of the world are represented by procedures
+which alter the database.
+
+It is assumed that you are familiar with the use of the editor for creating
+and testing procedures (TEACH VEDPOP) and that you have played with the LIB
+RIVER package (see TEACH RIVER). You should be familiar with techniques for
+defining procedures (TEACH DEFINE) and you should know about variables and
+their values (TEACH VARS). The POP-11 matcher is used, and if you are not
+familiar with that, see TEACH MATCHES and TEACH RESPOND. If you have not
+already worked through TEACH MATCHES, then you should do so, then TEACH
+DATABASE.
+
+-- THE RIVER WORLD --------------------------------------------------
+In the world of LIB RIVER there are five moveable objects which we represent
+as
+    MAN FOX CHICKEN GRAIN BOAT
+
+There is a river with two banks which we shall represent as
+    LEFT RIGHT
+
+(Lib river uses "lb" for "left bank" and "rb" for "right bank", but we'll
+use the more readable notation).
+
+To represent the state of the world we make use of two relationships
+    AT IN
+
+And we express information in the form of lists of words. So the initial
+state of the world is:
+    [MAN     AT LEFT]
+    [FOX     AT LEFT]
+    [CHICKEN AT LEFT]
+    [GRAIN   AT LEFT]
+    [BOAT    AT LEFT]
+
+(The extra spaces in the lists are there only for legibility.)
+
+Whereas the desired goal state is:
+    [MAN     AT RIGHT]
+    [FOX     AT RIGHT]
+    [CHICKEN AT RIGHT]
+    [GRAIN   AT RIGHT]
+    [BOAT    AT RIGHT]
+
+-- ACTIONS ---------------------------------------------------------------
+In order to simulate the process of solving the puzzle we are going to define
+some procedures to represent actions which the man can perform. These
+procedures will make changes to the world. The procedures are
+    PUTIN TAKEOUT GETIN GETOUT CROSSRIVER
+
+The world has certain 'laws' which restrict the use of these actions. Each
+action has certain preconditions and certain effects.
+
+-- PRECONDITIONS ------------------------------------------------------------
+Here are some of the preconditions
+    1. PUTIN (object)
+    1.a The object must exist
+    1.b There must not be another object in the boat (not even the man)
+    1.c The boat must be at the same location as the object
+    1.d The man must be at the same location as the object
+
+    2. TAKEOUT(object)
+    2.a. The object must exist
+    2.b. The object must be in the boat
+    2.c. The man must not be in the boat
+
+Can you formulate the preconditions for the remaining actions?
+
+-- CONSEQUENCES OF ACTIONS -------------------------------------------------
+Each action is defined by certain changes which it brings about. In addition
+there may be unintended consequences in some cases.
+For example, here are the intended consequences of GETOUT:
+    REMOVE([MAN IN BOAT])
+
+and, depending where the boat is, either
+    ADD([MAN AT LEFT])  or  ADD([MAN AT RIGHT])
+
+Can you work out the consequences of each of
+    PUTIN(object);
+    TAKEOUT(object);
+    GETIN();
+    CROSSRIVER();
+
+One of these may, in certain cases have unintended consequences, i.e.
+something gets eaten. Which one, and in what cases? We'll return to that
+later.
+
+We turn now to designing the procedures to manipulate the world.
+
+-- START() ------------------------------------------------------------
+The POP-11 system has a variable DATABASE which can be used to represent
+factual information. We shall use the procedures ADD, REMOVE, PRESENT and
+LOOKUP (all explained below) to manipulate and examine the stored
+information. In order to test out our procedures we need to be able to set up
+an initial version of the database, to represent the starting state.
+
+        define start();
+            [] -> database;         ;;; get rid of previous database
+            add([man at left]);
+            add([fox at left]);
+                ... you should complete this  ...
+        enddefine;
+
+Complete this procedure, in a file called RIVER2.P, and then test it (after
+ENTER X or ENTER C):
+    start();
+    database ==>
+
+Make sure that the procedure sets up the whole database with everything at
+the left side.
+
+-- DEFINING GETIN ----------------------------------------------------------
+Let's look at how the procedure to put the man into the boat might be
+defined. It takes no inputs and produces no results (leaves nothing on the
+stack), but it does change the database.
+First we have to find where the man is, left or right bank, and remove that.
+We can use the procedure REMOVE to do that. Next we add the information that
+the man is in the boat. For now, let us disregard the indirect consequences
+of the man getting into the boat -- e.g. something getting eaten.
+
+    define getin();
+        vars place;
+        remove([man at ??place]);
+        add([man in boat])
+    enddefine;
+
+Since the third line (with REMOVE) has a pattern variable "??PLACE", we must
+declare PLACE as a local variable for the procedure. Remember, the database
+is just a list of lists. REMOVE takes a pattern, and searches down the
+database till it finds a list which matches the pattern. It then makes a new
+database which doesn't contain that list.
+
+Put that procedure in your file, compile it, and test it, with the following
+commands to POP-11:
+
+    trace add remove;
+    start();
+    database ==>
+    getin();
+    database ==>
+
+Make sure that GETIN() causes the database to change in the right way.
+
+-- GETOUT ------------------------------------------------------------
+The man needs to be able to get out also. This is a little tricky. We can
+remove the information that the man is in the boat, easily enough. But we
+have to add that he is at the LEFT or the RIGHT bank. How? We use LOOKUP to
+find where the boat is, and use the same place.
+
+    define getout();
+        vars place;
+        remove([man in boat]);
+        lookup([boat at ??place]);
+        add([man at ^^place])
+    enddefine;
+
+So, put that into your file, compile it and try it out.
+    database ==>
+    getout();
+    database ==>
+    getin();
+    database ==>
+    getout();
+    database ==>
+
+As you should see, GETIN and GETOUT reverse each other's effects.
+
+-- REVISION -----------------------------------------------------
+What is the database?
+
+What does the procedure START do?
+
+What do each of the following do:
+    ADD, REMOVE, LOOKUP?
+
+Which of them can use pattern variables?
+
+What is a precondition for an action?
+
+What is a consequence for an action, and how are consequences represented in
+procedures like GETIN and GETOUT.
+
+------------------------------------------------------------
+We still need more procedures to get things across the river. In particular,
+we need to give the man a procedure to cross the river.
+
+Before reading on, see if you can define a suitable procedure. First think
+very clearly about its effects. It must REMOVE([BOAT AT ??X]), then it must
+add something, but what?
+Well, if X = [LEFT] then ADD([BOAT AT RIGHT]) otherwise ADD([BOAT AT LEFT]).
+
+See if you can turn that into a definition of CROSSRIVER. Then test it,
+making sure that each time it moves the boat OK:
+    start();
+    database ==>
+    getin();
+    crossriver();
+    getout();
+    database ==>
+
+By now the boat and the man should be at the RIGHT. If you repeat the GETIN,
+then CROSSRIVER then GETOUT sequence, then test the database again, man and
+boat should be back at the LEFT.
+
+You may find it convenient to define a procedure called CROSS. You may
+already have such a procedure left over from playing with TEACH RIVER. E.g.
+it may be in a file called CROSS.P. If it worked with LIB RIVER CROSS should
+work with your new home-made procedures GETIN, GETOUT, and CROSSRIVER. To
+help show what's going on, you could make it print out the database each time
+it has finished.
+
+
+-- CROSSRIVER -----------------------------------------------------------
+In case you had not succeeded in defining CROSSRIVER, here is a version you
+can copy. We introduce a new notion - IT. The POP-11 database procedures,
+LOOKUP, PRESENT, ADD and REMOVE have been defined so that if they add or
+remove or find an item in the database, then they assign that item to the
+variable IT. So the last thing found can be called IT.
+
+    define crossriver();
+        vars place, it;
+        lookup([boat at ??place]);      ;;; this changes IT
+        remove(it);
+        if place = [left] then
+            add([boat at right])
+        else
+            add([boat at left])
+        endif;
+    enddefine;
+
+Now be sure to test your procedure. If you have not already done so do
+    trace add remove lookup ;
+
+If you find this causes too much tracing you can later UNTRACE some or all of
+these procedures.
+
+-- PRECONDITIONS FOR GETIN, GETOUT, CROSSRIVER ------------------------------
+You may have noticed that we defined these procedures so that they produce
+the desired effects, but we did not make them check their preconditions.
+
+In order for the man to be able to GETIN he must not already be in the boat.
+So we can check to see if he is in the boat, and if so ask POP-11 to produce
+a mishap with an appropriate message. This requires the use of PRESENT.
+
+PRESENT is similar to LOOKUP except that PRESENT produces a TRUE or FALSE
+result (a "boolean" value), so that it can be used in a conditional
+instruction, e.g.:
+    IF PRESENT(<some pattern>) THEN <some action>
+    ELSE <some other action>
+    ENDIF;
+
+If the expression PRESENT(<some pattern>) is FALSE, you don't want a mishap
+to occur (which is what LOOKUP would produce). You want the second action to
+be performed.
+
+So lets now modify GETIN to make the check. We can first define a procedure
+called NOT_IN_BOAT which takes an argument and produces the mishap if the
+thing is in the boat. We'll later be able to use the same procedure to check
+one of the preconditions for PUTIN.
+
+We use the fact that the POP-11 procedure MISHAP can be
+given two lists, one containing the MISHAP message to be printed out, and the
+second one containing the thing or things which caused the mishap:
+
+    define not_in_boat(thing);
+        if present([^^thing in boat]) then
+            mishap([already in boat], thing)
+        endif;
+    enddefine;
+
+You can now add a call of this procedure to GETIN, which should now look
+something like this:
+
+    define getin();
+        vars place;
+        not_in_boat([man]);
+        remove([man at ??place]);
+        add([man in boat])
+    enddefine;
+
+You can you check that this modified procedure produces a mishap message of
+the required sort by attempting to GETIN() twice in a row. Try all this:
+
+    trace present;
+    start();
+    getin();
+    database ==>
+    getin();
+
+
+NB as you'll see from the tracing, PRESENT is different from LOOKUP in that
+it produces a TRUE or a FALSE result, to be left on the stack.
+
+-- PRECONDITION FOR GETOUT -------------------------------------------------
+You could define a similar procedure called IS_IN_BOAT(thing) which produces
+a mishap if the thing is not in the boat.
+
+    define is_in_boat(thing);
+        unless present([^^thing in boat]) then
+            ......
+        endunless;
+    enddefine;
+
+You should complete this procedure. Notice the difference between
+    IF PRESENT( ......) THEN
+and
+    UNLESS PRESENT( .......) THEN
+
+After completing the above definition, use it to check the precondition for
+GETOUT. I.e. insert a line like
+    IS_IN_BOAT([MAN]);
+
+at the appropriate place in your definition of GETOUT. Then compile it and
+test to make sure that you get a suitable message when you try to make the
+man get out twice in a row. The procedure IS_IN_BOAT can also be used to
+check the preconditons of TAKEOUT, later.
+
+-- PUTIN -------------------------------------------------------------
+We now have to define a procedure which takes a thing (in a list) as input,
+checks that it exists still (i.e. hasn't been eaten), checks that it is not
+in the boat, finds which bank it is on, checks that it is at the same place
+as the man, then removes the assertion that the thing is there and puts it
+into the boat.
+    define exists(thing);
+        unless present([ == ^^thing ==]) then
+            mishap([cannot manipulate nonexistent object], thing)
+        endunless
+    enddefine;
+
+    define putin(thing);
+        vars place;
+        exists(thing);
+        not_in_boat(thing);     ;;; error if precondition not satisfied
+        lookup([man at ??place]);
+        unless present([^^thing at ^^place]) then
+            mishap([cannot put in remote object], [^^thing not at ^^place])
+        endunless;
+        remove([^^thing at ^^place]);
+           ... complete this procedure ....
+    enddefine;
+
+Type this procedure into your file. Complete the procedure. Compile it then
+test it:
+    start();
+    putin([dog]);         ;;; should complain about non-existent object
+    putin([fox]);         ;;; should be OK
+    database ==>          ;;; check
+    putin([fox]);         ;;; second attempt should produce a mishap
+
+-- IMPROVING PUTIN -------------------------------------------------
+Are all the preconditions for PUTIN checked? What if you type
+    start();
+    getin();
+    putin([fox]);
+
+It depends whether it is safe to put in an object when you are already in the
+boat. Let's assume that is not allowed, so add the line
+    NOT_IN_BOAT([MAN]);
+
+near the beginning of the procedure PUTIN. Then make sure that it complains:
+    start();
+    getin();
+    putin([fox]);
+
+-- TAKEOUT --------------------------------------------------------------
+Defining this procedure should be straightforward, using the same sorts of
+ideas as PUTIN.
+    define takeout(thing);
+        <check that the thing exists>
+        <check that it is_in_boat>
+        <check that the man is not_in_boat>
+        <remove the object from the boat>
+        <put the object on the appropriate bank>
+    enddefine;
+
+You should complete that procedure. Make sure that all the relevant
+preconditions are checked for (compare your list of preconditions). Make sure
+that all the required effects are produced. You can look at the definition of
+GETOUT to see how it works out which side of the river to use when it adds
+the new location information.
+
+When you have completed that procedure, you should compile it and then check
+that it works. Take the fox right across, then back again, for example.
+    start();
+    putin([fox]);
+    cross();
+    takeout([fox]);
+    database ==>
+
+etc.
+
+
+-- WHAT - NO EATING? -----------------------------------------------------
+Unfortunately, we've not yet done anything about the UNINTENDED consequences
+of actions. You'll find that with the procedures you've defined so far you
+should be able to get everything safely across the river in any order, unlike
+the LIB RIVER procedures. Try it.
+
+Can you think of a way of modifying your procedures to check after some, or
+all of the actions, that it is not the case that the fox has been left with
+the chicken, or the chicken with the grain. If the situation is appropriate
+you should make a mishap occur, like the precondition procedures above.
+
+See if you can use IF PRESENT(....) etc to see if the dangerous situation has
+occurred. If you find this difficult, read on and try copying the procedure
+given below.
+
+-- AT WHAT STAGE SHOULD SOMETHING GET EATEN ? ------------------------------
+At what point should the program check whether it is dinner time? Let's
+assume it is immediately after the man gets into the boat. I.e. as the last
+step of GETIN. We can define a procedure to check the conditions, then do the
+eating then cause a mishap message. The procedure will take two arguments
+specifying a potential eater and potential eatee and if they are in the same
+place and unsupervised, eating should be made to happen. The procedure GETIN
+can supply appropriate arguments.
+
+    define checkeat(thing1,thing2);
+        ;;; if they are at same place, thing1 will eat thing2
+        vars place;
+        if   present([^^thing1 at ??place])         ;;; find the ??place
+        and  present([^^thing2 at ^^place])         ;;; use the ^^place
+        and  not(present([man at ^^place]))
+        then
+            remove([^^thing2 at ^^place]);
+            mishap([^^thing2 has been eaten by ^^thing1], [])
+        endif
+    enddefine;
+
+Notice the rather complex condition between IF and THEN. All three components
+have to be TRUE for the whole condition to be TRUE. The third portion
+    NOT(PRESENT([MAN AT ^^PLACE]))
+
+will be FALSE if the man is at the same place, otherwise TRUE. I.e. if
+PRESENT produces the result TRUE, then NOT replaces it with FALSE, and vice
+versa.
+
+Put that procedure into your file and then compile and test it:
+    start();
+    checkeat([fox],[chicken]);        ;;; nothing should happen-man there
+    putin([fox]);
+    getin();
+    checkeat([fox],[chicken]);        ;;; nothing should happen
+    checkeat([chicken],[grain]);      ;;; dinner time!!
+
+Now you can modify your GETIN procedure, by adding two lines to check whether
+the fox can eat the chicken and whether the chicken can eat the grain.
+After that, compile and try out your whole package, making sure that all
+'illegal' moves are checked for, and produce mishap messages.
+
+Have you forgotten anything? What about
+    putin([man]);
+
+-- REVISION ---------------------------------------------------------------
+How many arguments does MISHAP take? What does it do?
+
+What does PRESENT do? How does it differ from LOOKUP?
+
+-- EXERCISE ----------------------------------------------------------------
+Using RECORD (see TEACH RECORD), and TRACE, make a RECORD.LOG file which
+shows all your procedures at work, then incorporate it into a file called
+RIVER2 which explains what is going on and shows all the procedures.
+
+If you have not already done so, you should now do TEACH DATABASE. If you
+have done only the first part (to just before INFECT) now do the rest.

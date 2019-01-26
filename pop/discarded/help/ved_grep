@@ -1,0 +1,171 @@
+HELP VED_GREP (Unix Only)                      Aaron Sloman October 1990
+
+LIB * VED_GREP
+
+Provides a facility for searching a set of files for a specified
+string, and reading the result into a VED buffer.
+
+Example:
+
+To find every occurrence of "conversation" in the teach directory:
+
+    <ENTER> grep conversation $usepop/pop/teach/*
+
+The user can specify which Unix search command to use, as there
+are often much faster versions available than "grep".
+
+Note: this library replaced a slower, more restricted, version provided
+prior to Poplog Version 14.
+
+
+         CONTENTS - (Use <ENTER> g to access required sections)
+
+ -- Introduction
+ -- Formats for <ENTER> grep
+ -- The <flags> argument
+ -- Use "man" to find out about options avilable
+ -- Getting the <search-string> from the VED buffer
+ -- Getting ALL the arguments from the VED buffer
+ -- Removing colons after file names
+ -- Specifying which search program to use
+
+-- Introduction -------------------------------------------------------
+
+The <ENTER> grep command takes the <search-string> and searches through
+all the files specified, looking for occurrences of the string. All
+output goes goes into a temporary file in VED. The program uses
+-vedgenshell- and -pipein- for this purpose. (See HELP * PIPEUTILS)
+
+There are several ways the user can control how the search is done
+or what information is printed out.
+
+
+-- Formats for <ENTER> grep -------------------------------------------
+
+The formats available are as follows:
+
+<ENTER> grep [<flags>] <search-string> file1, file2 ...
+<ENTER> grep [<flags>] <search-string> <file-pattern>
+<ENTER> grep [<flags>] <file-pattern>
+<ENTER> grep [<flags>]
+
+These formats are explained below.
+
+
+-- The <flags> argument -----------------------------------------------
+
+The optional <flags> argument consists of one or more substrings
+starting with '-'. Exactly which flags are available to control
+the search will depend on which search command is used.
+
+Often the <flags> argument is not provided. Commonly used flags are
+
+    -v
+        InVert the search. I.e. report only lines NOT containing the
+        search string.
+
+    -l
+        List the files containing the string, but don't report every
+        occurrence.
+
+
+-- Use "man" to find out about options avilable -----------------------
+
+The Unix "man" command will provide information on flags availble and
+the forms of string patterns that can be in the <search-string>. E.g.
+
+    <ENTER> man grep
+
+if you use the "grep" option, or
+
+    <ENTER> man ggrep
+
+if you use "ggrep" etc.
+
+See below on how to specify which search command is used.
+
+
+-- Getting the <search-string> from the VED buffer --------------------
+
+If no <search-string> argument is provided and the <file-pattern>
+contains no spaces (e.g. *.p) then the item to the right of the cursor
+in the VED buffer is taken as the <search-string>, where the item is
+delimited on the right by by any of the following characters:
+
+        space tab newline ( ) ; , [ ] { } | > < ~ & * ? ` ' "
+
+and a trailing . or , is ignored.
+
+For example, if the cursor is just to the right of the arrow on the next
+line
+    -> prmishap,
+
+then the command
+
+    <ENTER> grep $popautolib/*
+
+is equivalent to
+
+    <ENTER> grep prmishap $popautolib/*
+
+and will print out information about all files in $popautolib that
+contain the string 'prmishap'.
+
+
+-- Getting ALL the arguments from the VED buffer ----------------------
+
+If no <search-string> or <file-pattern)> is given, then it uses the
+whole of the current VED line as argument. Thus the above commands would
+be equivalent to simply giving the command
+
+    <ENTER> grep
+
+while the VED cursor is on a line containing nothing but
+
+    prmishap $popautolib/*
+
+
+-- Removing colons after file names -----------------------------------
+
+Normally the output of commands like "grep" includes a colon immediately
+after each file name. This can be inconvenient if you wish to use the
+"^f" option described in HELP * VEDEXPAND to give a command using the
+file name. So by default, ved_grep removes the first colon in each
+line.
+
+This can be suppressed by putting the following command in your init.p
+file:
+
+    vars grep_leave_colons = true;
+
+The default is false: i.e. colons are removed.
+
+
+-- Specifying which search program to use -----------------------------
+
+The file searching command is specified by assigning a string to the
+variable -grep_search_command-, depending on what is the fastest string
+search command available on your machine. E.g. depending on what is
+available on your machine, you could put one of these in your vedinit.p
+if desired.
+
+    vars grep_search_command = 'egrep';
+or
+    vars grep_search_command = 'ggrep';
+or
+    vars grep_search_command = 'bm';
+
+Otherwise the command name defaults to 'grep'.
+
+Usually if the Free Software Foundation's GNU grep is available
+(sometimes called "ggrep") it is the fastest search program to use.
+Otherwise if 'bm' is available it is fastest. Otherwise try 'egrep' and
+'grep' and decide which is faster.
+
+The corresponding 'man' file should tell which flags are available
+to control the search, and what search patterns can be used in the
+<search-string>
+
+
+--- C.unix/help/ved_grep
+--- Copyright University of Sussex 1990. All rights reserved. ----------

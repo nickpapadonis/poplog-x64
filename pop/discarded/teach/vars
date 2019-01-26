@@ -1,0 +1,411 @@
+TEACH VARS                                            A. Sloman May 1987
+
+                    Introduction to POP-11 variables
+                    ================================
+
+If you are not familiar with the use of POP-11 and the editor, first
+work through TEACH VEDPOP. Then do TEACH MARK and TEACH LMR to see how
+to compile POP-11 programs from the editor.
+
+CONTENTS - (Use <ENTER> g to access required sections)
+
+ -- INTRODUCTION AND OVERVIEW
+ -- WHY VARIABLES ARE USEFUL
+ -- VARIABLES CAN BE USED OUTSIDE PROCEDURE DEFINITIONS
+ -- AN EXERCISE
+ -- VARIABLES CAN BE USED TO STORE LISTS
+ -- YOU CAN HAVE ANY NUMBER OF VARIABLES
+ -- CASE IS SIGNIFICANT IN POP-11
+ -- A VARIABLE CAN BE USED TO STORE ANY TYPE OF OBJECT KNOWN TO POP
+ -- DECLARING AND INITIALISING VARIABLES
+ -- LOCAL AND GLOBAL VARIABLES
+ -- ASSOCIATED DOCUMENTATION
+
+
+-- INTRODUCTION AND OVERVIEW ------------------------------------------
+
+This teach file introduces the notion of a variable, which has a name
+(e.g. "num3" "list" "x" etc) and can have a value. Variables can be used
+inside procedures as "local variables" or outside procedures as
+"global" variables. Variables can be "declared" using "vars". A value
+can be assigned to a variable using the operator "->" read as "goes to".
+
+The value assigned to a variable can be any of the kinds of things
+POP-11 knows about - words, lists, numbers, procedures, etc. By
+associating an object with the name, you can then refer to that object
+in different instructions. For example, you may wish to test whether the
+object has some property and if it does then perform a certain action on
+it otherwise test if it has another property and if it does, then
+perform another action on it, and so on.
+
+
+-- WHY VARIABLES ARE USEFUL -------------------------------------------
+
+The way the word "it" was used in the previous sentence illustrates why
+variables are useful in programming languages. By using the word "it", I
+was able to say something general about an unspecified object and refer
+to the same object in different parts of my sentence.
+
+Similarly, in a programming language you often need to define some
+general procedure for operating on objects of a certain kind, and spell
+out the instructions in a way that will be the same for all objects. You
+can then use a variable to refer to that object. E.g. in the following
+pseudo-English instruction I use "x" as a variable referring to an
+unspecified number.
+
+    to double x do (x + x)
+
+That isn't POP-11. The pop-11 equivalent would be
+
+    define double(x);
+        return(x + x);
+    enddefine;
+
+Notice the three occurrences of "x". One, in the first line, saying that
+the procedure double is to have one input, which is going to be called
+x, then in the second line saying what to do with x. Use the MARKLO and
+MARKHI keys (as explained in TEACH MARK) to mark that definition, then
+load the marked range using <ENTER> lmr <RETURN> (as explained in TEACH
+LMR). POP-11 will read in and compile the definition but will not print
+anything out.
+
+You can check that it has read it by asking it to print out what double
+is. Mark and load (lmr) the next line.
+
+    double =>
+
+it should print, in your 'output' file:
+
+    ** <procedure double>
+
+saying that "double" is now the name of an object which is a procedure.
+
+Now you can get POP-11 to RUN the procedure with the number 5 as input,
+if you mark and load the following.
+
+    double(5) =>
+
+POP-11 will give x the value 5 and return (5 + 5) i.e. 10, and => will
+print it out.
+
+Try that.
+
+Try defining and testing a procedure called "treble", which takes a
+number and produces a result that is three times that number. Instead of
+"x" you could use some other name, e.g. "fred" for the input number. So
+your definition might start:
+    define treble(fred);
+
+complete that and test it by marking and loading it, then, in your
+'output' file mark and load:
+
+    treble(5) =>
+
+to check that it prints out the right number.
+
+
+-- VARIABLES CAN BE USED OUTSIDE PROCEDURE DEFINITIONS ----------------
+
+In the definition of double, the use of "x" in the first line told
+POP-11 that you wanted to use "x" as a variable. I.e. the variable was
+automatically "declared" as a variable that was "local" to that
+procedure. This is sometimes called an "implicit" declaration.
+
+If you want to use a variable outside a procedure, e.g. to store some
+value for future use, then you should tell POP-11 by "declaring" the
+variable using the special syntax word "vars", as shown below.
+
+    vars num;
+
+Mark and load it. (Nothing should be printed out.) That is an EXPLICIT
+declaration of a global variable, global because it is not inside the
+definition of a procedure.
+
+You can then give the variable a value, using the "assignment" operator
+"->". For example, suppose we want to give the word "num" the value 1.
+We can assign 1 to it thus:
+
+    1 -> num;
+
+Read that as "one goes to num". Now mark and load that line. Nothing is
+printed out, but you can now ask POP-11 to print the value of the
+variable num:
+
+    num =>
+
+Mark and load that. The printout will go to your 'output' file.
+
+You can now give an instruction to POP-11 to add one to num and an
+instruction to print out the value:
+
+    num + 1 -> num;     ;;; read as "num plus 1 goes to num"
+    num =>              ;;; print the value of num
+
+Now mark those two lines and then load them using lmr. The new value of
+num is printed in your output file. If you use the REDO key to repeat
+the LMR instruction, and do it over and over again you'll see the value
+of num grow.
+
+
+-- AN EXERCISE --------------------------------------------------------
+
+Try the following exercise, modelled on the "num" example above. Before
+doing it first look back at the "num" example so that you remember all
+the details. (Perhaps write them down, including all the semi-colons).
+Then read up to the next heading, so that you know what is coming.
+
+You could type the example into a file of your own called 'test.p':
+
+    <ENTER> ved test.p <RETURN>
+
+(a) Declare a variable with any name you like, e.g. num1, fred, or
+whatever, using "vars" as was done above with num. Mark and load it.
+(You may accidentally choose a name that is already reserved by POP-11.
+If you get an obscure error message, try changing the name of the
+variable.)
+
+(b) Type in an instruction to assign 2 to your variable, using "->"
+
+(c) Mark and load the assignment. (So far, nothing should have been
+printed out, if you made no mistakes).
+
+(d) Type in an instruction to multiply the value of your variable by 2
+and assign the result to the same variable. The multiplication symbol in
+POP-11 is "*" (i.e. the asterisk).
+
+(e) Type in an instruction to print out the value of the variable,
+using the print-arrow "=>"
+
+(f) Mark and load your two instructions. This should print something
+into your 'output' file.
+
+(g) Then REDO the load command several times to see how the value of
+your variable changes.
+
+If you type your POP-11 commands into another file ('test.p') and the
+output goes into a file called 'output', then if you are using a VDU
+screen that allows only two files to be shown at a time, this TEACH file
+will no longer be visible. You can get back to it by typing
+
+    <ENTER> teach vars
+
+or using <ESC> e as explained in TEACH BUFFERS.
+
+
+-- VARIABLES CAN BE USED TO STORE LISTS --------------------------------
+
+Try giving POP-11 the following three commands, by marking and loading
+the next three lines:
+
+    vars shopping;
+    [fruit meat soap] -> shopping;
+    shopping =>
+
+The first command declares "shopping" as a variable.
+
+The second tells POP-11 to create a list containing the three words
+"fruit", "meat" and "soap" and assign the list to the variable, i.e.
+make it the value. The third says that you want the 'value' of
+"shopping" printed out.
+
+Square brackets should always be put around lists which are directly
+typed in to POP-11 and POP-11 will always put square brackets around any
+lists it prints out. Here's a second example for you to mark and load.
+
+    vars tasks;
+    [shopping cleaning] -> tasks;
+    tasks =>
+
+Try extending both lists by typing in extra words between the square
+brackets. You can then mark and load the commands and get different
+values printed out. Later you will learn to do more interesting things
+with lists. (E.g. TEACH MATCHES, TEACH DATABASE)
+
+
+-- YOU CAN HAVE ANY NUMBER OF VARIABLES --------------------------------
+
+You can create any number of variables. A variable name need not be a
+meaningful English word - it can be any letter followed by any sequence
+of letters or digits. The following example gives some idea of the range
+of possible names:
+
+    vars cat, goat, x, y13, dx, c3po, r2d2, k9, fhuasf, goal,
+                  earlier_state_of_conciousness, people, steve;
+
+All these names are now available for use. Notice how the underscore can
+be used to increase legibility. The underscore "_" should not be confused
+with the hyphen "-". They generally look different on the keyboard. You
+can't use the hyphen as it doesn't "join up" with letters, in POP-11.
+
+On the whole, it is better to use mnemonic variable names if you want
+your programs to be easily read by people (the computer doesn't care -
+the word "earlier_state_of_conciousness" is as meaningful to it as
+"fhuasf" or "x").
+
+Occasionally you will decide on a variable whose name is already
+reserved as a system name by POP-11. Then you will get an error message,
+e.g.
+    vars length;
+
+The mishap message says:
+  MISHAP:   IDW: ILLEGAL DECLARATION OF WORD (missing ; after vars?):
+  INVOLVING: length
+
+If you are really curious to know what this means, you can use the HELP
+IDW command to get more information, but don't worry about that for now
+if you are learning programming for the first time.
+
+
+-- CASE IS SIGNIFICANT IN POP-11 --------------------------------------
+
+In POP-11, upper case and lower case letters are different, and so you
+can have two variables with the same letters but one in capitals and the
+other lower case, e.g. "x" and "X" are different, as in:
+
+    vars x, X;
+    [hello]-> x;
+    2-> X;
+    x=>
+    ** [hello]
+    X=>
+    ** 2
+
+Some of the TEACH files use UPPER case for the POP-11 examples to make
+them stand out from the English text. You should always type them
+without capital letters.
+
+The rules for legal formation of variable names in POP-11 are rather
+more complicated than shown here. HELP * WORDS gives more details. (You
+can access that help file by putting the cursor on the asterisk then
+typing <ESC> h.)
+
+
+-- A VARIABLE CAN BE USED TO STORE ANY TYPE OF OBJECT KNOWN TO POP -----
+
+Any type of object known to POP-11 can be 'assigned' to a variable. We
+have already seen that numbers and lists can be assigned to variables.
+It is also possible to assign a word. The following is rather confusing
+example. Try to understand what is going on.
+
+    vars w,z;
+    "z" -> w;
+    "w" -> z;
+    z =>                ;;; print out the value of z
+    ** w
+    w =>                ;;; print out the value of w
+    ** z
+    "w" =>              ;;; print out the word "w" itself
+    ** w
+    "z" =>              ;;; print out the word "z" itself
+    ** z
+
+If you wish to check those examples, mark and load each line, apart from
+the lines with "**", which tell you what should be printed out into your
+output file.
+
+
+-- DECLARING AND INITIALISING VARIABLES -------------------------------
+
+In the examples given above variables were first declared and then
+given some value (initialised). However, these operations can be
+combined with the use of the '=' sign e.g., so instead of
+
+    vars x;
+    [hello] -> x;
+
+you can do:
+     vars x = [hello];
+     x=>
+     ** [hello]
+Try it.
+
+You can also declare and initialise several variables in one "vars"
+instruction, though you have to remember to put commas between them,
+thus:
+     vars y = x, p = [goodbye], n = [how are you];
+     y=>
+     ** [hello]
+     n=>
+     ** [how are you]
+     p=>
+     ** [goodbye]
+
+
+-- LOCAL AND GLOBAL VARIABLES -----------------------------------------
+
+It is possible for the same variable to be used both globally and
+locally, though in general that is a bad policy, since it can cause
+confusion. Here is an example to illustrate the fact that local
+variables do not affect the values of global variables, when the
+procedure has finished running.
+
+    define triple(list);
+        return([^^list ^^list ^^list])
+    enddefine;
+
+This defines a procedure that can be given a list as input, and produces
+as a result a new list containing all the elements of the original list,
+three times over. Mark and load it, and then test it:
+
+    triple([ho]) =>
+    ** [ho ho ho]
+
+    triple([three blind mice]) =>
+    ** [three blind mice three blind mice three blind mice]
+
+The variable "list" can also be used as a global variable, and given a
+list of numbers as values. (Actually, POP-11 doesn't care what value you
+give it, even though its name is "list".)
+
+    vars list = [1 2 3 4 5];        ;;; declare and initialise "list"
+    list =>
+    ** [1 2 3 4 5]
+
+Now if we run the procedure triple again:
+
+    triple([hee]) =>
+
+What will happen to the value of the variable list? While triple is
+running, list will have the list [hee] as its value. But when triple is
+finished, the previous value of list will be restored, namely
+    [1 2 3 4 5]
+
+Using mark and LMR, check that out for yourself.
+
+
+-- ASSOCIATED DOCUMENTATION -------------------------------------------
+
+
+When you have finished reading this, type ENTER Q to quit this file.
+
+You'll find out more about variables from other TEACH and HELP files.
+You can use the keys <ESC> and n to move the cursor to the next
+asterisk. When the cursor is on the asterisk you want, type <ESC> h
+to get the help or teach file.
+
+    TEACH *DEFINE   - more information on defining procedures, and
+                        local variables.
+
+    TEACH *LISTS    - information on lists, with examples
+    TEACH * MATCHES - using the POP-11 pattern matcher, with variables
+                        in the patterns.
+
+For more advanced information (for experienced programmers) try:
+    HELP  *WORDS    - the format for legal POP-11 words
+    HELP  *VARS     - more advanced information on variables
+
+Note for experienced programmers. Because of its history POP-11
+variables declared by "vars" and those implicitly declared as input or
+output variables of procedures are dynamically scoped. It is also
+possible to use lexically scoped variables in POP-11, and for all
+programs other than toy demonstrations this is the preferred method.
+However, at present (1987) the pattern matcher does not work with
+lexically scoped variables, though this will be changed. For more
+information see:
+    HELP  *LVARS    - the use of lexically scoped variables
+    HELP  *LEXICAL  - more on lexically scoped variables
+    REF * VMCODE    - for computer scientists and others interested in
+                        implementation details.
+
+--- C.all/teach/vars ------------------------------------------------------
+--- Copyright University of Sussex 1987. All rights reserved. ----------

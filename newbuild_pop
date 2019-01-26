@@ -1,0 +1,172 @@
+#!/bin/sh
+## Modified, possibly wrongly, by a.sloman 9 Jun 2018
+#
+# http://www.cs.bham.ac.uk/research/poplog/setup/bin/poplog
+# Script which sets up poplog environment variables, and then runs
+# The command given as argument (e.g. pop11, xved, clisp, etc.)
+# Aaron Sloman
+# 17 Sep 2000
+# See also the poplogmail script in this directory
+
+# Please edit the "setenv" line to suit your installation
+
+## This could be a "poplog" shell script, as described in the man file
+## It can be invoked with commands such as
+##    poplog pop11
+##    poplog ved
+##    poplog xved <file>
+##    poplog prolog
+##    poplog clisp
+##    poplog pml
+##    poplog pop11 +eliza
+
+# setup local directory tree for poplog root
+# may be a symbolic link to something else
+
+poplogroot=`pwd`
+
+usepop=$poplogroot
+
+#popsys=$usepop/pop/pop
+#popexternlib=$usepop/pop/extern/lib
+#popautolib=$usepop/pop/lib/auto
+popcom=$usepop/pop/com
+#popsrc=$usepop/pop/src
+
+# set the poplocal variables
+poplocal=$poplogroot
+local=$poplocal/local
+
+# Run the initialisation files to set up additional environment
+# variables, extend $PATH, etc.
+. $usepop/pop/com/poplog.sh
+
+# cp /pom/kompi/lang/poplog/npop3/v15.53/pop/pop/corepop.bb /pom/kompi/lang/poplog/npop3/v15.53/pop/pop/corepop
+
+# (Optional)
+# Set $EDITOR and $VISUAL, unless set by users. Users can undo this.
+
+#PATH=$popsys:$PATH
+#export PATH
+
+# If sourced with no arguments do nothing, but leave environment
+# variables set. Otherwise run the command given.
+
+#if ($?DISPLAY) xrdb -merge $poplocal/local/setup/Poplib/Xdefaults.poplog
+
+if [ -d ~/Poplib ] ; then
+    poplib=~/Poplib :
+else
+    poplib=$poplocal/local/setup/Poplib :
+fi
+#export poplocal poplib poplogroot local usepop popsys
+export poplocal poplib poplogroot local usepop
+#export popcom popexternlib popsrc
+
+
+# prevent local files being found and compiled
+mv $poplocal/local $poplocal/local.temp
+
+ls -l $poplocal/local.temp
+
+if true ; then
+cd $popsys
+
+pwd
+echo "rebuilding system images"
+
+$popsrc/mksyscomp -d popc poplibr poplink
+
+ls -l *.psv
+
+ln -s corepop popc
+ln -s corepop poplibr
+ln -s corepop poplink
+
+#  exit
+fi
+
+if true ; then
+cd $popexternlib
+pwd
+
+echo "mklibpop"
+./mklibpop
+
+cd $popcom
+pwd
+
+# echo "mkXpw"
+# ./mkXpw -I/usr/include/X11R5
+
+## CHANGED
+
+echo "mkXpm"
+./mkXpm -I/usr/lib64
+
+cd $usepop/pop/obj
+    pwd
+    echo 'saving library files in old'
+    mkdir old
+    ls -l
+    mv *.* old
+fi
+
+## this assumes pgcomp, pglibr, and pglink commands have been created
+## see $usepop/pop/src/mksyscomp
+
+cd $usepop/pop/src
+    pwd
+    echo 'pgcomp'
+    pgcomp *.[ps]
+
+    echo 'pglibr'
+    pglibr -c ../obj/src.wlb *.w
+#    rm *.[ow]
+
+
+if true ; then
+cd $usepop/pop/ved/src/
+    pwd
+    echo 'pgcomp'
+    pgcomp *.[ps]
+    echo 'pglibr'
+    time pglibr -c ../../obj/vedsrc.wlb *.w
+    rm *.[ow]
+
+cd $usepop/pop/x/src/
+    pwd
+    echo 'pgcomp'
+    pgcomp *.[ps]
+    echo 'pglibr'
+    pglibr -c ../../obj/xsrc.wlb *.w
+    rm *.[ow]
+
+fi
+
+# link a complete system into a newpop11 image, using pglink
+cd $popsys
+pglink
+
+# exit
+ls -l newpop11
+# newpop11 basepop11
+./corepop %nort ../lib/lib/mkimage.p -entrymain ./newpop.psv ../lib/lib/newpop.p
+
+mv $poplocal/local.temp $poplocal/local
+
+ls -l $poplocal/local
+
+# $usepop/pop/src/newpop -link -norsv
+$usepop/pop/src/newpop -link -x=-xm -norsv
+
+### The following are done by the newpop command
+## $popcom/mkstartup
+##
+## ## Needed for next items
+## setenv pop_pop11 "-$popsavelib/startup.psv"
+##
+## $popcom/mkplog
+## $popcom/mkclisp
+## $popcom/mkpml
+## $popcom/mkxved

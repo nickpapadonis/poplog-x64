@@ -1,0 +1,176 @@
+TEACH MATCHES2                                    Aaron Sloman Jan 1982
+
+This teach file assumes that you have read through TEACH MATCHES.
+It introduces new uses of the POP-11 matcher.
+
+-- A NEW OPERATION "-->" ---------------------------------------------------
+
+Sometimes you know the general form of a list, but you merely want to get at
+one or more specific elements. For instance, you may wish to dig out the
+first, or the last element, for some purpose. Often, we want to perform some
+operation on all the elements of a list, so we start by doing it to the first
+element, and then continue on the remainder. For this purpose it is sometimes
+useful to be able to dig out the first element, and then to dig out all the
+remaining elements and make a list of them.
+
+In cases like this where we know in advance that the list will match a
+pattern, and we are just using the matcher to dig out components and assign
+them to variables, we use the operation '-->', instead of MATCHES. The only
+difference is that MATCHES produces a RESULT, which it leaves on the stack,
+to be printed out by '=>', or possibly used in a conditional instruction,
+which will do one thing if the result is true, and another thing if the
+result is false. By contrast '-->' does not produce a result. It merely does
+the match. If however it cannot do the match (i.e. if MATCHES would have
+produced the result FALSE), then '-->' causes a mishap to occur. Try the
+following, to POP11:
+
+    [1 2 3] --> [1 2 3] =>
+    [1 2 3] --> [1 ??X] =>
+    X =>
+    [1 2 3] --> [3 2 1] =>
+
+The first two uses of '=>' do not print out any result, true or false, so we
+might just have well have used the semi-colon to signal the end of the
+command.
+However the match does work, and the second match gives X a value, just as
+MATCHES would have. In the last case, the match fails, and a mishap results.
+
+Try the following:
+    VARS X,Y;
+    [A B C D] --> [?X ??Y];
+    X =>
+    Y =>
+    [A B C D] --> [??X ?Y];
+    X =>
+    Y=>
+
+
+-- USING "-->" IN A PROCEDURE ---------------------------------
+
+We could use the operation --> to define a procedure to produce the last
+element of a given list: Try this (type it to POP11, or put it in a file and
+load it).
+
+    DEFINE FINAL(L) -> RESULT;
+        L --> [== ?RESULT]
+    ENDDEFINE;
+
+then test it
+    FINAL([A B C D]) =>
+    FINAL([A]) =>
+    FINAL([ [A B] [C D] [E F] ]) =>
+    FINAL([]) =>
+
+To see what's going on here, try:
+    VARS RESULT;
+    [1 2 3 4 5] --> [== ?RESULT];
+    RESULT =>
+
+
+You could also have used --> to define a procedure to produce the
+the 'tail' of a list, i.e. a list containing all but the first element
+    DEFINE TAIL(L) ->RESULT;
+        VARS X;
+        L --> [?X ??RESULT]
+    ENDDEFINE;
+test it
+    TAIL([ A B C D]) =>
+    TAIL ([ABCD]) =>
+
+Actually the definition of TAIL is wasteful. It includes the variable X,
+whose value is not used. The item '?X' was there just to ensure that RESULT
+was not given the whole list L. To do this we can use '=', which corresponds
+to '==' roughly as '?' corresponds to '??'. I.e. '=' is a sort of anonymous
+variable which will match exactly one thing. So
+
+    DEFINE TAIL(L) ->RESULT;
+        L --> [= ??RESULT]
+    ENDDEFINE;
+test it:
+    TAIL([A B C D]) =>
+N.B. in the definition of TAIL it is important to have a space between
+    '=' and '??',
+for otherwise POP11 will make them 'stick together' to form a bigger symbol,
+which it will then not recognize. Try, without the space:
+    [1 2 3] --> [ =??RESULT];
+
+Similarly, you could define a procedure HEAD to get the first element.
+    DEFINE HEAD(L)->RESULT;
+        L --> [?RESULT ==]
+    ENDDEFINE;
+
+    HEAD([ A B C ]) =>
+    HEAD([]) =>
+
+Actually, POP11 has such a procedure, called HD:
+    HD([A B C D])=>
+which is also like
+    [A B C D](1) =>
+(Often, in POP11 there is more than one way to do the same thing.
+Choose the method which you think makes your programs clearest.)
+
+Use the match operation --> to define a procedure which produces the
+second element of a list. Then test your procedure.
+
+
+
+
+
+The following should work:
+    DEFINE SECOND(LIST) -> RESULT;
+        LIST --> [ = ?RESULT ==]
+    ENDDEFINE;
+    SECOND([A B C D]) =>
+    SECOND([A]) =>
+
+
+Now define a procedure which will produce a list containing all
+but the first and last elements in a list.
+    DEFINE MIDDLE(LIST) -> RESULT;
+        LIST --> .....
+    ENDDEFINE;
+complete that and test it.
+
+
+
+
+
+
+Did you do this?
+    DEFINE MIDDLE(LIST) -> RESULT;
+        LIST --> [= ??RESULT = ]
+    ENDDEFINE;
+
+NB its important to leave a space between '=' and '??'
+test that:
+    MIDDLE([MARY HAD A LITTLE LAMB]) =>
+
+This might be a good point at which to pause, and make notes on
+everything you've learnt so far. Try to think of ways in which it
+might be useful in a program like Eliza, or some other program which
+tries to 'understand' or at least analyse sentences. (What's the
+difference?)
+
+Exercise: explain the difference between MATCHES and -->
+    (It may help if you understand how the stack works. See TEACH STACK.)
+
+TEACH RESPOND will help you understand MATCHES better through practice using
+it.
+
+For more on the use of "MATCHES" and "-->" to define simple procedures, See
+        TEACH MOREMATCH
+
+For a summary  see HELP MATCHES.
+(HELP files give more compact information than TEACH FILES)
+
+TEACH ARROW gives more practice on the use of ^^ and ^ in lists.
+
+For more on lists, see TEACH LISTS.
+
+TEACH LISTSUMMARY gives an overview of list manipulating facilities.
+
+See TEACH VARS for more on variables.
+
+Use <ESC> Q to get this file out of the editor, when you have finished it.
+
+TEACH POPNOTES gives an overview of lists, the matcher and the database.

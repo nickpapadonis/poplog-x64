@@ -1,0 +1,539 @@
+VEDPOP                                         Revised A.Sloman Sept 87
+
+This file introduces the use of VED to create a POP-11 program. It shows
+how to compile (or load) the program from the VED buffer. It assumes
+that you already know how to move around a VED file (See TEACH TEACH and
+TEACH VED), how to create your own VED file (TEACH VED) how to mark
+ranges and use LMR (See TEACH MARK and TEACH LMR) and how to switch
+between files (See TEACH SWITCHWINDOW, TEACH BUFFERS)
+
+
+CONTENTS (Use the <ENTER> g command to jump to desired section
+========
+
+ -- GOING TO POP-11
+ -- DEFINING A PROCEDURE
+ -- A SIMPLE PROCEDURE
+ -- TESTING YOUR PROCEDURE
+ -- SOME TERMINOLOGY
+ -- PUTTING A PROCEDURE DEFINITION INTO A FILE
+ -- ANOTHER PROCEDURE
+ -- MISHAPS
+ -- TYPES OF MISHAPS
+ -- STILL MORE ON MISHAPS
+ -- A USEFUL PROCEDURE?
+ -- INPUT AND OUTPUT
+ -- TIDYING FILES
+ -- WHAT TO DO NEXT
+
+This teach file reviews the procedure for switching between TEACH, VED
+and POP-11 that was introduced in TEACH VED. It shows you how to define
+a very simple program, which POP-11 can compile, and then run for you.
+
+-- GOING TO POP-11 -------------------------------------------------
+
+At the moment, you are reading a TEACH file using the VED editor. If you
+want to stop reading this file and try something in POP-11, you must
+give a command to POP-11. There are two ways of doing this. The first
+is to leave the VED file and type directly to POP-11. The second way,
+introduced later in this TEACH file, is to type POP-11 commands inside
+VED and then load them.
+
+To leave VED give the ENTER q command; that is, you should press the
+ENTER key, then press the 'q' key and then press the RETURN key. 'q' is
+short for 'quit' and means that you want to leave the editor. When you
+do this, you will (eventually) get a colon prompt from POP-11 which
+means that POP-11 is waiting for some command, ie:
+
+    :
+
+To get back to reading this teach file, you give the POP-11 command
+
+    teach vedpop
+
+That is, you type 'teach vedpop' immediately after the colon, so that
+the line looks like this:
+
+    : teach vedpop
+
+Then press RETURN and you will be back at the start of this TEACH file.
+You will then have to scroll forward to this line.
+
+Do all that now to ensure you know how to get to POP-11 from TEACH and
+back to TEACH from POP-11.
+
+
+--GIVING POP-11 AN INSTRUCTION ---------------------------------------
+
+The colon (:) prompt means that you are communicating directly with
+POP-11. Anything you type in will be interpreted not as words, but as
+POP-11 commands. You have already given one POP-11 command: teach vedpop
+The computer only interprets commands line by line: whenever you press
+RETURN to start a new line, the characters on the current line are
+interpreted as POP-11. Try giving a command to POP-11. An exciting
+command to give is:
+
+     2+2=>       <PRESS RETURN>
+
+This tells POP-11 to add up two and two and then print the result; the
+'=>' symbol means 'print'. We call it the 'print arrow'. You type it by
+pressing the = key and then the > key. The result of the calculation is
+displayed immediately below your command:
+
+     ** 4
+
+The two stars merely indicate that the result, 4, has been output using
+the print arrow. Try entering some more arithmetic expressions, eg:
+
+     12-3+5=>
+
+You can put spaces between items in the expression. An item is a single
+number (eg 12) or a symbol (eg + or => ) You could write
+the expression above as
+
+     12 - 3 + 5 =>
+
+but POP-11 will not interpret the expression correctly if you split
+items (eg if you type = > rather than => or 1 2 rather than 12 ).
+
+Which of these are valid POP-11 expressions:
+
+    2 3  + 4 5 =>
+
+    3-5+45=>
+
+    34     +      10       =>
+
+    1 + 3 - 5 = >
+
+
+If you are not sure, then try typing them to POP-11.
+
+-- DEFINING A PROCEDURE -----------------------------------------------
+
+There are two main kinds of instruction you can type in reponse to a
+colon prompt from POP-11. One is a command to do something, here and now
+like the one above; the second is an instruction to define a procedure.
+An example of a procedure definition appears below. Essentially a
+procedure definition extends the range of POP-11 commands. You need to
+be able to do that in order to write programs. For now you are not going
+to define any interesting procedures. In fact they are quite pointless
+in themselves. But doing them will help you get used to some of the
+mechanics of using the editor and getting the editor to compile
+procedures and obey POP-11 instructions. (Doing these elementary things
+is a bit like playing scales when learning a musical instrument.)
+
+Some of the things you will be asked to type are quite extended and it
+may be difficult for you to remember them exactly. While you are typing
+in your VED file you can use the two commands
+    <ESC> LF    (linefeed)
+    <ESC> BS    (backspace)
+
+to move this TEACH window up or down.
+
+So, now use VED to start your very own file called 'test.p' It is
+important to end the file name with '.p' so that VED knows that the file
+is going to contain POP-11 programs. I.e. do
+
+    <ENTER> ved test.p
+
+
+-- A SIMPLE PROCEDURE ------------------------------------------------
+
+Now type the following definition of a new procedure called 'test' into
+your file. It tells POP-11 to create a new instruction called 'test'
+which when it is run (not when it is defined) will produce the result
+of additing 2 to a number called "num".
+
+     define test(num);
+        return(num + 2);
+     enddefine;
+
+Type that into your file called test.p. Be careful to type exactly what
+is shown (including the semi-colons). If you make any mistakes when
+typing in the definition, you can use use the CHARDELETE key to erase
+characters, then re-type them.
+
+Then, using the MARKLO and MARKHI keys as explained in TEACH MARK, mark
+those three lines in your file.
+
+Finally, as explained in TEACH LMR ask VED to obey the "load marked
+range" command to load (i.e. compile) that procedure definition.
+    ENTER lmr
+
+If you make a mistake you will get an error message, and you may have to
+examine very carefully what you have typed, in order to fix it.
+
+If all goes well your procedure will have been compiled. What that means
+is that it is translated from the human-readable text form into into
+machine language. The machine language version of the procedure is
+stored in the temporary memory of the computer ready to be obeyed.
+
+
+-- TESTING YOUR PROCEDURE ---------------------------------------------
+
+Once you have typed the definition and had it compiled, you have
+effectively extended the POP-11 system to recognize a new command. You
+can get get POP-11 to obey it and print out the result as follows. Edit
+a file called 'output', thus:
+
+    <ENTER> ved output
+
+then type into it:
+
+     test(5) =>
+
+This says, "obey the procedure called test, giving it 5 as input, and
+print the result preceded by two asterisks (that's what "=>" means)".
+When obeyed this should get the procedure to calculate and print out the
+result of adding 5 and 2.
+
+Now mark that instruction and use <ENTER> lmr to get it obeyed. The
+result should be printed into a file called 'output'. You will then have
+three files in VED, this teach file, your file 'test.p' and your file
+called 'output'. You can get back to this file by using the command
+
+    <ENTER> teach vedpop
+
+Or else use the <ESC> e  command to select a file, as described in
+TEACH BUFFERs.
+
+If anything goes wrong (ie you got a MISHAP message, or the wrong
+result) it may have been because you had not typed the procedure
+definition exactly right. If you suspect this is what happened then go
+back to your file
+
+    <ENTER> ved test.p
+
+and look carefully at the procedure definition in your test.p file. If
+you see a mistake, then correct it (using the DELETE key and typing in
+new characters as necessary). Then repeat the process of loading the
+procedure definition and running the procedure.
+
+Try typing in and loading some other tests of the same procedure, e.g.
+
+    test(99) =>
+
+Also try changing the procedure so that adds a different number to its
+input, instead of adding 2. Then mark it and re-load it, and come back
+to the output file and test it again.
+
+
+-- SOME TERMINOLOGY ----------------------------------------------------
+
+TEST is now the name of a PROCEDURE, which has one ARGUMENT (or INPUT)
+and returns one RESULT, i.e. a number. The POP-11 instruction
+
+     test(5)
+
+is a CALL of the procedure, i.e. POP-11 is asked to RUN, (or EXECUTE, or
+OBEY) the instructions in the DEFINITION of the procedure. Before doing
+so however, the ARGUMENT, i.e. the number 5, is put on "the stack"
+(you'll learn more about that later) where the procedure test can get at
+it. The result is left on the stack.
+
+The RESULT is printed out by the print arrow '=>' in the instruction
+
+     test(5) =>
+
+The parentheses are important. They tell POP-11 that the procedure is to
+be obeyed. If the name is not followed by parentheses (with an argument
+inside), then POP-11 will just attempt to print out the procedure. Try
+this:
+
+     test =>
+
+Think of the parentheses "(  )" as the 'doit' parentheses. The fact that
+we put something inside the parentheses indicates that the procedure
+requres one thing to operate on, its ARGUMENT (i.e. INPUT).
+
+That was a pointless procedure: nobody would ever want to define a
+procedure like that except for practice. For now try to ignore the fact
+that it is pointless, and simply do these exercises to develop skills
+you will use later for less pointless tasks.
+
+-- PUTTING A PROCEDURE DEFINITION INTO A FILE ----------------------
+
+You could have avoided putting the procedure definition into VED, and
+instead just typed it direct to POP-11.
+
+However, you would then have to re-type it every time you logged in and
+wanted to run it. Moreover, the chances of typing in a big procedure
+without making a mistake are low. So usually it is best to use VED to
+create a file containing the definition and then arrange for POP-11 to
+read (or compile) the file. This allows you to use VED to fix mistakes
+(POP-11 will report if it can't interpret what you've written). Also,
+the definition will be stored in long term memory on the magnetic disk
+and so be available for use on another day.
+
+
+-- ANOTHER PROCEDURE --------------------------------------------------
+
+Now try adding a second procedure definition to your new program file.
+First tell VED you want to edit test.p, then type in the second
+procedure and run it:
+
+    ENTER ved test.p
+
+                       <You should then be in the test.p file>
+
+    define newtest(num1,num2);
+        return(num1 + num2);
+    enddefine;
+
+                       <Then mark the procedure and load it>
+                       <Then go to the output file and try>
+
+     newtest(5,7) =>
+
+                       <Then mark the line and run it>
+                       <Try other pairs of numbers>
+Then:
+     teach vedpop
+
+                       <That should take you back to this file>
+
+-- MISHAPS ----------------------------------------------------------
+
+We will now introduce a deliberate error, to see how POP-11 reacts. Go
+back to VED test.p and then type in a third definition, thus:
+
+    ENTER ved
+
+    define third();
+        return(4 + 4);
+    enduntil;
+
+Then mark and load it. POP-11 will print out a message effectively
+saying that it couldn't understand what ENDUNTIL was doing in the file
+(there being no preceding UNTIL). It was expecting to find ENDDEFINE, to
+match the initial DEFINE. You will still be in the test.p file, so you
+can alter your third procedure to finish with enddefine. Do that (ie
+replace 'enduntil' with 'enddefine'), then mark and load it. Now go to
+your output file and run it with:
+
+    third()=>
+
+Your test.p has a mixture of procedure definitions, and your 'output'
+file has a collection of test instructions with the printout they
+produce.
+
+Try to avoid keeping both definitions and test instructions in the same
+file, as the tests may get in the way when you want to use your
+procedures later.
+
+
+-- TYPES OF MISHAPS ---------------------------------------------------
+
+As you will have found, POP-11 can detect certain types of mistake (or
+MISHAP as it calls them) automatically. Mistakes come in two types -
+syntactic and run-time.  You make a syntactic mistake when you type
+something to POP-11 (or into a file subsequently read by POP-11) that is
+ungrammatical (according to the POP-11 language). In that case POP-11
+cannot understand the instructions.
+
+A run-time error occurs when you have issued a command that, although
+grammatically correct, goes wrong when POP-11 tries to perform it. For
+example, to ask POP-11 to add two and two and then print the result you
+would type:
+
+     2 + 2 =>
+
+If you typed:
+
+     + 2 2 =>
+
+POP-11 would tell you of the SYNTACTIC mistake; if you typed:
+
+     [two] + [two] =>
+
+it would tell you of the run-time mistake (the mistake is that [two] is
+not a number but a 'list' and cannot be used for arithmetic; don't worry
+what a list is - all will be revealed in due course).
+
+-- STILL MORE ON MISHAPS -----------------------------------------------
+
+Syntactic mistakes are discovered as the file is loaded. Run-time
+mistakes may not be discovered until much later (when the new
+definitions are used). One of NASA's space probes (to Mars, I think) was
+lost in space due to a run-time mistake in the control programs which
+was discovered only once the probe was far from Earth. No doubt more
+serious errors have occurred in computer programs, and yet more serious
+ones will occur one day.
+
+You'll find that as you get more proficient at programming you'll make
+fewer and fewer syntactic mistakes; you will always make run-time
+mistakes however. If anything goes wrong in VED or POP-11 itself (which
+happens occasionally!) then they are examples of undetected run-time
+mistakes: OUR mistakes. Please report them!
+
+-- A USEFUL PROCEDURE? -----------------------------------------------
+
+Just so that you can see how something useful might be done using the
+techniques learnt so far, here is how you might define a procedure which
+works out how to add VAT tax to a price. Suppose that you have to add
+15% VAT tax to the cost of items you buy. We can define a procedure
+called TAX which works out what the TAX on an item is, then we can
+define a procedure called COST which works out the total cost, i.e.
+price + tax. To work out the TAX we have to multiply the price by 0.15
+(i.e. 15%). In POP-11 the asterisk is used for multiplication.
+
+Put the following procedures into a file called tax.p.
+
+    define tax(price);
+        return(price * 0.15);      ;;; multiply price by 0.15 to get 15%
+    enddefine;
+
+    define cost(price);
+        return(price + tax(price));  ;;; add the 15% tax to the price
+    enddefine;
+
+All the words after the three semi-colons ";;;" until the end of a line
+are taken as 'comments' (ie they are ignored by POP-11). Comments are
+useful to you, and to anyone who might read your program, to remind you
+of the purpose and effect of a procedure. You can add a comment to the
+end of any line of POP-11.
+
+When you have typed the procedures into your file load them (you can
+load the two together by marking the entire range). Then to find out the
+total cost of something whose price is 20 pounds do:
+
+    cost(20) =>
+
+If you just want to find out the tax, do
+
+    tax(20) =>
+
+-- INPUT AND OUTPUT ----------------------------------------------------
+
+The procedures TAX and COST, like the previously defined procedures
+require some input. If you just type
+
+    tax() =>
+
+You will get an error message:
+
+;;; MISHAP - STE: STACK EMPTY (missing argument? missing result?)
+;;; DOING    :  prmishap tax  ...
+
+Try it and see!
+
+This happens because you defined the procedure TAX with something
+between the parentheses on the first line, indicating that an input was
+needed:
+
+    define tax(price);
+        return(price * 0.15);        ;;; multiply by 0.15 to get 15%
+    enddefine;
+
+The input is here named 'price'. But POP-11 doesn't 'understand' the
+word, it is merely a name to indicate where the input for TAX is stored:
+you could have used any other name for the input, e.g. 'xyxy' as in:
+
+    define tax(xyxy);
+        return(xyxy * 0.15);      ;;; multiply price by 0.15 to get 15%
+    enddefine;
+
+Whatever you call the input, if you specify in the definition that there
+is to be an input then you must supply one when you run the procedure.
+The input is also referred to as an "argument" to the procedure. A
+procedure that takes in arguments and produces a result is often called
+a "function".
+
+But you can use different arguments at different times. Try different
+arguments, using your file called 'output':
+
+    <ENTER> ved output
+
+Then type in, mark and load:
+
+    tax(200) =>
+
+which should give the result:
+
+    ** 30.0
+
+    tax(150) =>
+
+Should give the result:
+
+    ** 22.5
+
+Try all that and other examples.
+
+Then try the procedure COST with different inputs.
+
+The procedures produce an output, often called a result. Here's the
+definition of TAX again:
+
+    define tax(price);
+        return(price * 0.15);       ;;; multiply by 0.15 to get 15%
+    enddefine;
+
+The part of the definition which says that a result is returned from the
+procedure is:
+
+    return(price * 0.15);
+
+The multiplication (*) produces a number which is returned as the result
+of the procedure.
+
+
+-- TIDYING FILES ----------------------------------------------------
+
+If you log out and, later, log in again, the files you have created will
+still exist, but the procedures will need to be reloaded. You can do
+this simply enough by just marking the range of all the procedure
+definitions.
+
+If you include test procedure calls in amongst the procedure definitions
+then POP-11 will run these as well. Usually, when you come back to a
+file, you will want to load the procedures first, and then try them out
+on new data, which is why it is a bad idea to mix procedure definitions
+and procedure calls. So, before you log out, I suggest you go back to
+your tax.p file and delete any procedure calls you may have inserted,
+leaving just the procedure definitions.
+
+-- WHAT TO DO NEXT ----------------------------------------------------
+
+A good thing to try next is
+
+TEACH MATCHES - this introduces you to the POP-11 pattern matcher,
+    used for analysing lists.
+
+Other possible activities:
+
+TEACH RESPOND - this will show you have to build an Eliza-like program
+    using the matcher.
+
+TEACH READLINE - this explains how to use the POP=11 "readline"
+procedure to read in something typed by the user, for a program to
+respond to.
+
+If you want to try something completely different:
+
+TEACH RIVER - This gives useful practice in defining a POP-11 procedure
+    to solve a problem.
+
+For revision:
+
+TEACH TEACH
+TEACH VED
+TEACH MARK
+TEACH LMR
+TEACH BUFFERS
+
+If you are shooting ahead, try
+TEACH DEFINE    for more information on defining POP-11 procedures.
+
+For more information on POP-11 read:
+     R. Barrett, A. Ramsay, A. Sloman
+        POP-11: A PRACTICAL LANGUAGE FOR AI,
+        Published 1985 by Ellis Horwood (UK), Wiley (USA)
+
+This defines a useful subset of POP-11. A yet more detailed account of
+POP-11 is given in the POPLOG REF files. But they are only worth reading
+if you are a very experienced programmer already.
+
+--- C.all/teach/vedpop -------------------------------------------------
+--- Copyright University of Sussex 1989. All rights reserved. ----------

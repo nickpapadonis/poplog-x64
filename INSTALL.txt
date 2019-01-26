@@ -1,0 +1,12 @@
+Inatallation:
+
+1) Unpack content of the tarball in desired place
+2) Edit the invocation of 'newpop' in the 'build_pop' script to choose
+   appriate version of X support.  As is the build_pop script links
+   with Motif (or Lesstif).  The alternative (commented out) line
+   links with Xt.
+3) run the 'build_pop' script to recompile (on fast machine it
+   should take less than 30 seconds)
+4) move 'poplog' script to some directory in the path and adjust
+   the 'poplogroot' variable to point to root of the installed
+   tree (that is directory containing this file).

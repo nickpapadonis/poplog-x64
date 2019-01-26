@@ -1,0 +1,442 @@
+TEACH MATCHES                                  Revised A.Sloman Oct 1987
+
+PATTERN MATCHING IN POP11
+=========================
+
+         CONTENTS - (Use <ENTER> g to access required sections)
+
+ -- Introduction
+ -- Some examples
+ -- How MATCHES works: a first approximation
+ -- Matching arbitrary elements
+ -- Digging out elements of a list using ??
+ -- Getting practice with pattern variables
+ -- Repeated pattern variables
+ -- Restricting a variable to match only one item, using "?"
+ -- Revision questions
+ -- Further reading
+
+
+-- Introduction -------------------------------------------------------
+
+POP11 has a built in 'pattern matcher' which can be used for checking
+the correspondence of a list with a pattern. The pattern matcher
+provides a powerful tool for operating on lists, and makes it much
+easier to write list processing programs than if you use the "lower
+level" facilities usually provided in languages like Prolog and Lisp.
+
+This TEACH file introduces the use of the matcher, but without
+mentioning all of its capabilities, since that would be too confusing.
+At the end of this file there are pointers to additional things to read,
+giving information about the more sophisticated facilities. If you look
+at TEACH RESPOND after this you will see how to use the MATCHER to write
+an Eliza-like program.
+
+In POP-11 lists are created using square brackets. Thus the following is
+a list of words:
+    [the cat sat on the mat]
+
+and this is a list of numbers:
+
+    [1 2 3 99 98 97]
+
+You can also have lists containing mixtures of items of different sorts.
+The following list contains words, numbers lists of words and a list of
+lists of numbers.
+
+    [1 cat 2 dog [a b c] [d e f] [[66 67 68] [200 205 210 215]] 99]
+
+A list can be typed in over several lines: spaces and newlines are
+ignored, e.g.:
+
+    [a list
+        of words
+            in three lines]
+
+A pattern is itself a list, which may contain 'pattern elements'. An
+example of a pattern is:
+
+    [== is a ==]
+
+which would match the lists
+
+    [fred is a student]
+    [the oldest person in the romm is a very happy woman]
+    [[joe bloggs] is a [champion golfer]
+
+or even:
+
+    [ sad asdf gobbledigook is a junkrubbish asdfasd sadf]
+
+The pattern element "==" will "match" any sequence of words in a list, a
+bit like a joker, or "wild card" in a card game, which can be used to
+stand for any card.
+
+The normal format for using the matcher is:
+
+    <list> matches <pattern>
+
+This POP-11 instruction produces a result that is either TRUE or FALSE,
+and may have additional useful side effects, as will be shown below.
+
+
+-- Some examples ------------------------------------------------------
+
+To get a feel for how you use the matcher, try out the commands below.
+You can put them in your output file, mark them (see TEACH MARK) and
+then use <ENTER> lmr to get them obeyed. The result will be printed in
+your 'output' file. Try marking and loading each line in turn, but first
+see if you can tell whether the result will be TRUE or FALSE.
+
+    [ 1 2 3] matches [1 2 3] =>
+    [1 2 3] matches [3 2 1] =>
+    [steve is a teacher ] matches [ ==  is a == ] =>
+    [fred is not a computer] matches [ == is a == ] =>
+
+Experiment with different lists and different patterns to see which ones
+produce TRUE and which FALSE.
+
+
+-- How MATCHES works: a first approximation ---------------------------
+
+The operation called MATCHES takes as its inputs two lists, one written
+on each side. It classifies the list on the left as matching or not
+matching the pattern specified by the the list on the right. The pattern
+element '==' will match an arbtrary number of items in the given list.
+This sort of ability can be used in programs like Eliza to sort
+sentences typed by the user into different categories, to be treated
+differently, as explained in TEACH RESPOND. For example you can write
+programs of the form:
+
+    if      <input> matches <pattern1> then <output1>
+    elseif  <input> matches <pattern2> then <output2>
+    elseif  <input> matches <pattern3> then <output3>
+    elseif  <input> matches <pattern4> then <output4>
+    .... etc ...
+
+
+-- Matching arbitrary elements ----------------------------------------
+
+You can use '==' to represent any number of 'don't care' elements,
+including NO elements. Try the following and see which are true, which
+false (in each case, try to work out the result for yourself before you
+get POP-11 to obey the command.
+
+    [1 2 3 4] matches [1 == 4] =>
+    [1 2 3 4] matches [1 == ] =>
+    [1 2 3 4] matches [2 == 4] =>
+    [1 2 3 4] matches [== 4] =>
+    [1 2 3 4] matches [1 == 2 3 4] =>
+    [1 and also 2 3 4] matches [1 == 2 3 4] =>
+    [1 2 3] matches [== 2 ==] =>
+
+
+Notice the different ways in which == will match an empty sublist
+    [ 1 2 3] matches [== 1 2 3] =>
+    [ 1  2]  matches [ 1 == 2] =>
+    [ 1 2 3] matches [== 3 ==] =>
+
+Will these come out true or false?
+    [1 2 3] matches [== 1 == 2 == 3 == ] =>
+    [1 2 3 4] matches [ == ] =>
+
+Work out your answer then try them. Try constructing a list containing
+the numbers 1 to 6 that will and a list that will and a list that will
+not match the pattern
+
+    [== 3 == 2 == 1 == ]
+
+-- Digging out elements of a list using ?? ----------------------------
+
+Often you don't merely want to see if something is recognised as fitting
+a pattern. You also want to get at the components of the list, and use
+them. For instance, consider a conversational program with the following
+strategy:
+
+        user types                      program responds
+    FRED IS VERY HAPPY          SUPPOSE FRED WERE NOT VERY HAPPY
+    SMOKING IS BAD FOR YOU      SUPPOSE SMOKING WERE NOT BAD FOR YOU
+    EVERY COMPUTER IS STUPID    SUPPOSE EVERY COMPUTER WERE NOT STUPID.
+
+The rule can be expressed in English something like this.
+
+    If the input contains some words followed by 'is' followed by some
+    more words, then the output must contain the word 'suppose' followed
+    by the first set of words, then 'were not' followed by the second
+    set of words.
+
+That's rather verbose. In POP11, you might have an instruction something
+like this (notice that we start by declaring four variables 'input',
+'first', 'second' and 'output'):
+
+    vars input, first, second, output;
+    if      input matches [??first is ??second]
+    then    [suppose ^^first were not ^^second] -> output;
+    endif;
+
+(Don't try typing that in yet. We have not defined INPUT so it will not
+work.) This rule would sometimes behave rather stupidly, for instance
+responding to:
+
+    I DONT THINK THAT IS VERY SENSIBLE
+with
+    SUPPOSE I DONT THINK THAT WERE NOT VERY SENSIBLE
+
+But never mind the stupidity for now. Let's look at the important
+concepts. One important concept is a conditional instruction, using
+IF....ENDIF. For now we'll take that for granted.
+
+First notice that instead of '==' we now have '??first' and '??second' as
+pattern elements on the right in
+
+        input matches [??first is ??second]
+
+This tells MATCHES that when it has found that the list on the left does
+match the pattern, it must treat FIRST and SECOND as variables, and give
+them new values, namely lists made of the corresponding elements. So, in
+our first example, with input [FRED IS VERY HAPPY], MATCHES would do the
+following assignments:
+
+    [fred] -> first;
+    [very happy] -> second;
+
+Test that as follows
+
+    vars first, second;
+    [fred is very happy] matches [ ??first is ?? second ] =>
+
+Then find out the values of first and second thus:
+
+    first =>
+    second =>
+
+The new values of the variables FIRST and SECOND can then be used in
+conjunction with the double-up-arrow symbol '^^' to build up
+the response
+    [suppose ^^first were not ^^second]
+
+which in this case would evaluate to
+
+    [suppose fred were not very happy]
+
+Try it:
+    [suppose ^^first were not ^^second] =>
+
+You can think of '^^' as meaning, roughly, 'use the value of the
+following variable to insert elements into the list'. If the value of
+the variable following '^^' is not a list, a mishap will occur.
+
+For now, we shall not pursue the use of '^^'. (For more on '^^' see
+TEACH ARROW).
+
+To see how the matcher assigns lists to pattern variables in the above
+examples, try getting POP-11 to obey the following. Note that we start
+by telling POP11 that we are going to use FIRST and SECOND as variables:
+
+    vars first, second;
+    [fred is very happy] matches [ ??first is ??second] =>
+    first =>
+    second =>
+
+Then try:
+    [father christmas is a very old man] matches [ ??first is ??second] =>
+    first =>
+    second =>
+
+Try further variations of your own. You can use more than two "pattern
+variables", e.g.
+
+    vars a, b, c;
+    [alice andrews stood between bertha butlin and cathy carter]
+        matches
+    [??a stood between ??b and ??c ] =>
+
+    a=>
+    b=>
+    c=>
+
+Notice that an instruction using matches can extend over more than one
+line. So can an addition:
+
+    3
+    +
+    4 =>
+
+-- Getting practice with pattern variables ----------------------------
+
+What will be the values of X and Y after the following matches tests?
+First try to work out the answers, then get POP-11 to tell you.
+
+    vars x, y;
+    [a b c] matches [a ??x] =>
+    x =>
+
+    [a b c] matches [??x c] =>
+    x =>
+
+    [a b c] matches [??x ??y] =>
+    x =>
+    y =>
+
+    [1 2 3 4] matches [??y] =>
+    y =>
+
+Use the computer to find out the answers.
+
+Notice that the items not preceded by '??' are 'constants', i.e. they
+only match themselves.
+
+A pattern variable may get the empty list as its value if there are no
+corresponding elements in the other list. Try:
+
+    [a b] matches [a ??x b] =>
+    x =>
+
+    [1 2 3] matches [??x 1 2 3 ??y] =>
+    x =>
+    y =>
+
+When a match fails, the new values of the variables are unpredictable. Try
+
+    undef -> x; undef -> y;
+    [1 2 3 4] matches [??x 3 5 ??y] =>
+    x =>
+    y =>
+
+-- Repeated pattern variables -----------------------------------------
+
+If you use the same variable twice over in a pattern, the match will be
+TRUE ONLY if there is a corresponding repetition in the list on the
+left. Try the following:
+    vars x, y;
+    [war is war] matches [??x is ??x] =>
+    x=>
+
+    [war is very nasty] matches [??x is ??x] =>
+
+    [war is very nasty] matches [??x is ??y] =>
+    x =>
+    y =>
+
+
+In some cases you may find it a little unobvious how the use of repeated
+variables affects the matcher. Try the following, and see if you can
+anticipate how the match will work.
+
+    [1 2 3 1 2 3] matches [??x ??x] =>
+    x=>
+
+    [1 2 3 4 5 6] matches [??x ??x] =>
+contrast:
+    [1 2 3 4 5 6] matches [== ==] =>
+
+Thus, repeating a variable makes the pattern more restrictive than
+repeating the "joker" (or "wild card") symbol '=='.
+
+Repeated matching of the empty list is allowed. Try:
+
+    [1 2 3 4 5 6] matches [??x ??y ??x] =>
+    x=>
+    y =>
+
+-- Restricting a variable to match only one item, using "?" -----------
+
+So far we have prefixed variables with the double query symbol '??',
+which tells POP-11 to match the variable with any number of elements in
+the left hand list. We sometimes want to make sure we get only one item
+from the list on the left, and assign that item to a variable. Try:
+
+    vars first rest;
+    [a b c d] matches [?first ??rest] =>
+    first=>
+    rest =>
+
+Notice how the use of '?' restricts FIRST to match ONE item which is
+assigned to it, whereas '??' allows REST to match any number of items,
+which are put together into a list and assigned to it. Compare the
+following:
+    [a b c d ] matches [?first ?rest] =>
+    [a b c d] matches [??first ?rest] =>
+    first =>
+    rest =>
+
+Try writing a matches command that will assign the second element of a
+list to the variable second, e.g. complete the following instruction in
+such a way as to assign "b" to 'second'
+
+    [a b c d e]  matches ........  =>
+
+Try making it assign the second last element to 'x'.
+
+So you can use the single query "?" to ensure that the matcher digs out
+just the first or second or the last element of the list.
+
+Similarly you can use '=' as an "anonymous" pattern element to match
+exactly one item, to contrast with '==' which will match any number.
+Thus if we are interested only in the second, or second last element of
+a list, we can use a combination of '=', '==' and '?' to extract it,
+thus
+    vars x;
+    [a b c d e] matches [ = ?x ==] =>
+    x =>
+
+    [a b c d e] matches [ == ?x =] =>
+    x =>
+
+Try those out with different lists on the left hand side.
+
+How would you use the matcher to dig out the third last element of a
+list? Try it out and make sure it works.
+
+You can mix 'queried' variables, with the 'anonymous' pattern elements
+'=' and '=='. So the following will make x stand for the object
+occurring immediately after c :
+    [a b c d e] matches [== c ?x ==] =>
+    x =>
+
+    [a 1 b 2 c 3 d 4] matches [ == c ?x ==] =>
+    x =>
+
+Having done that, try a version which will set x to be whatever comes
+just before the number 3, in various lists. E.g. complete the following
+so as to make x get the value 2.
+
+    [a 1 b 2 c 3 d 4 ] matches .......
+
+-- Revision questions -------------------------------------------------
+
+    1. What does MATCHES do? What inputs does it take, and what sort of
+        result does it produce?
+
+    2. Explain how '==' works with MATCHES.
+
+    3. Explain how '??' works with MATCHES.
+
+    4. What is the difference between '??' and '?'.
+
+    5. What is the difference between '==' and '='.
+
+
+-- Further reading ----------------------------------------------------
+
+TEACH RESPOND shows how to make use of the matcher in designing an
+Eliza-like program.
+
+If you'd like some additional exercises giving more features of the
+matcher try TEACH MATCHES2
+
+Chapter 8 of the book on POP-11 by Barrett, Ramsay and Sloman describes
+the matcher in more detail.
+
+TEACH LISTS introduces some of the other procedures provided in POP-11
+for operating on lists.
+
+TEACH ARROW gives more instruction in using '^^' and other constructs to
+build lists in POP-11.
+
+For more experienced users, HELP MATCHES gives a summary of the
+facilities of the matcher, including several more sophisticated than
+those shown here.
+
+--- C.all/teach/matches ---------------------------------------------------
+--- Copyright University of Sussex 1987. All rights reserved. ----------

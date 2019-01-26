@@ -1,0 +1,18 @@
+#!/bin/sh
+IM=$1
+IM=${IM:-newpop11}
+POP__cc=${POP__cc:-cc}
+$POP__cc -Wl,-export-dynamic -o $IM \
+poplink_1.o \
+poplink_2.o \
+poplink_3.o \
+$popobjlib/src.olb \
+poplink_4.o \
+poplink_dat.o \
+-L$popexternlib/ \
+-lpop \
+-ldl \
+-lncurses \
+-lm -lc
+ST=$?
+exit $ST

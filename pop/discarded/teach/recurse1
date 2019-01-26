@@ -1,0 +1,649 @@
+TEACH RECURSE1                                  Steven Hardy August 1978
+                                               Updated A.Sloman Nov 1989
+
+                     RECURSIVE PROCEDURE DEFINITIONS
+                    (Illustrated with POP11 examples)
+
+
+         CONTENTS - (Use <ENTER> g to access required sections)
+
+ -- Introduction, and prerequisites
+ -- The example of factorial
+ -- Why are circular definitions permitted?
+ -- Example: adding the numbers in a list
+ -- Expressing sum in Pop-11
+ -- Finding the largest number in a list
+ -- A Pop-11 definition of largest(list)
+ -- An inefficient definition of "largest"
+
+-- Introduction, and prerequisites ------------------------------------
+
+This teach file discusses 'recursive' definitions, that is defining some
+concept in terms of itself (or some group of concepts in terms of each
+other).
+
+For example, does society condition the way people think or is it the
+way people think that shapes society? Both may be true, but many people
+feel intuitively suspicious of such circular arguments.
+
+The examples below assume that you are familiar with procedure
+definitions in POP-11 (see TEACH * DEFINE), including the definition of
+procedures with inputs and outputs.
+
+You should also be familiar with the basic arithmetical operations
+
+    +   (plus)
+    -   (minus)
+    *   (multiplied by)
+
+and the elements of list processing, as introduced in TEACH * LISTS.
+In particular, you need to know that
+
+    (a) [] is an empty list
+    (b) HD is a built-in operation to find the first element of a list
+    (c) TL is a built-in operation to find the tail of a list, where
+        the tail of L is a list containing all the elements of L except
+        the first.
+
+
+
+-- The example of factorial -------------------------------------------
+
+One way of defining things recursively is to treat them numerically. An
+example which may be familiar to you is the definition of a factorial, a
+concept often used in mathematics. The factorial of a number is got by
+multiplying together all the numbers from 1 up to that number.
+
+So (using "*" for multiplication) we have the following examples:
+
+Factorial of 5 is
+
+    5 * 4 * 3 * 2 * 1
+
+which is 120. Factorial of 9 is
+
+    9 * 8 * 7 * 6 * 5 * 4 * 3 * 2 * 1
+
+which is 362880!
+
+It is easy to give examples of this concept, but how can we define it
+in general for any number. Here is one way:
+
+
+    (a) factorial 1 is 1.
+    (b) factorial of a number n greater than 1 is n multiplied by the
+        factorial of n-1,
+
+We represent the factorial of n as "factorial(n)", though mathematicians
+often represent it as "n!" and read it as "n factorial".
+
+From (a) and (b) you can work out the factorial of any number. For
+example, because 3 is greater than 1, definition (b) implies that
+factorial of 3 is :
+
+    3 * factorial(2)
+
+Because 2 is also greater than 1, factorial(2) is 2 * factorial(2 - 1),
+so we can replace "factorial(2)" above giving:
+
+    3 * 2 * factorial(1)
+
+and, because factorial 1 is 1 (using definition (a)),  that is
+
+    3 * 2 * 1
+
+
+Algebraically the definition reads:
+
+
+    (a) factorial(1) = 1
+    (b) if n > 1 then  factorial(n) = n * factorial(n-1)
+
+
+-- Why are circular definitions permitted? ----------------------------
+
+That seond clause, (b) defines 'factorial' in terms of factorial - how
+is that possible without endless circularity?
+
+Modern programming languages permit the programmer to define operations
+and predicates in terms of themselves. Some people find this a little
+disturbing (or at least confusing) and so it might be instructive to
+consider how a computer can do this. The key idea, which is often hard
+to remember, is that once a procedure P has been defined and the
+definition has been compiled, any procedure can use P. I.e. any
+procedure can "call" P, provided that it gives P the appropriate inputs.
+The caller will simply wait till P's instructions have been obeyed, and
+then continue.
+
+If ANY procedure can use P, then P can also use P. I.e. it can use
+itself to solve some sub-problems. While writing the instructions for P
+you may find it hard to believe that P can be used in the middle,
+because the definition has not yet been completed. However, once the
+procedure has been compiled, all the instructions for doing P are in the
+computer. So when P calls P, the computer will do exactly the same as if
+anything else calls P: i.e. it will run the instructions for doing P.
+
+
+-- Example: adding the numbers in a list ------------------------------
+
+We'll use a slightly different example, as some readers will be
+unfamiliar with factorial and may find the concept unmotivated.
+
+You often have to add up a set of numbers. Suppose we represent a set
+of numbers by a list, e.g.
+
+    [3 5 13 6 22 4]
+
+You probably know how to add up the numbers presented in such a list,
+but can you tell a computer how to do it?
+
+Consider the following definition of the 'the sum of a set of numbers':
+
+    (a) The sum of a set of numbers is zero if the set is empty
+    (b) otherwise it is the first element of the set plus the
+        sum of the rest of the set.
+
+(b) Implies that the sum of the numbers in [3 5 13 6 22 4], which we
+can represent as sum([3 5 13 6 22 4]) is
+
+    3 + sum([5 13 6 22 4])
+
+since [5 13 6 22 4] is the tail of the list. Once again we can use
+the definition (b) to "expand this" giving
+
+    3 + 5 + sum([13 6 22 4])
+
+using (b) repeatedly we eventually get to
+
+    3 + 5 + 13 + 6 + 22 + sum([4])
+
+and then, (since [] is the tail of [4]):
+
+    3 + 5 + 13 + 6 + 22 + 4 + sum([])
+
+To finish this off, we have to use definition (a), giving
+
+    3 + 5 + 13 + 6 + 22 + 4 + 0
+
+We can define "sum" more formally thus:
+
+    (a) sum([]) = 0
+
+    (b) if L is not empty then
+        sum(L) = hd(L) + sum(tl(L))
+
+where "hd" is the Pop-11 procedure that gives the first element of the
+list, and "tl" is the procedure that gives the tail, i.e. a list
+containing all elements apart from the first. Notice that hd and tl are
+not defined for empty list: these Pop-11 procedures give an error if
+applied to []. But this is not a problem, since case (b) excludes the
+possibility of L being the empty list.
+
+
+-- Expressing sum in Pop-11 -------------------------------------------
+
+When translated into POP11 the above definition becomes:
+
+    define sum(set) -> total;
+      if set = [] then
+          0 -> total
+      else
+          hd(set) + sum(tl(set)) -> total
+      endif
+    enddefine;
+
+You should be able to test that procedure on a number of examples.
+
+    sum([]) =>
+    ** 0
+
+    sum([15]) =>
+    ** 15
+
+    sum([1 3 5 7]) =>
+    ** 16
+
+Use the Pop-11 tracer to help you see what is going on when sum runs.
+Trace "sum" and "tl" and "+".
+
+    trace sum tl +;
+
+(Becuase "tl" and "+" are "system" procedures you will have to
+recompile "sum" to make the tracing work for them.
+
+    sum([1 3 5]) =>
+    > sum [1 3 5]        ;;; Going into sum with [1 3 5]
+    !> tl [1 3 5]        ;;; Calling tl to get the tail
+    !< tl [3 5]          ;;; tl returns [3 5], for the recursive call
+    !> sum [3 5]         ;;; Calling sum recursively with the tail
+    !!> tl [3 5]         ;;; The new call of sum needs the tail of [3 5]
+    !!< tl [5]           ;;; tl returns [5]
+    !!> sum [5]          ;;; Call sum recursively with the new tail [5]
+    !!!> tl [5]          ;;; The new call of sum needs tail of [5]
+    !!!< tl []           ;;; which is the empty list
+    !!!> sum []          ;;; Call sum recursively with the empty list
+    !!!< sum 0           ;;; At last sum knows what to return - 0
+    !!!> + 5 0           ;;; Call + with the previous head and 0
+    !!!< + 5             ;;; Plus returns the result 5
+    !!< sum 5            ;;; which is then used as the result of sum
+    !!> + 3 5            ;;; Call plus with previous head and previous
+    !!< + 8              ;;; result: Plus returns 8
+    !< sum 8             ;;; which is then returned by sum
+    !> + 1 8             ;;; At last the inital call of sum can
+    !< + 9               ;;; call + with 1 and 8, getting back 9
+    < sum 9              ;;; which is the final result of sum
+    ** 9                 ;;; And "=>" prints it out
+
+
+Notice how NO addition is done until after the recursion has got to the
+end of the list, and produced the first result, the number 0.
+
+We can see the same thing without the tracing of "+" and "tl".
+
+    untrace + tl;
+    sum([1 3 5]) =>
+    > sum [1 3 5]
+    !> sum [3 5]
+    !!> sum [5]
+    !!!> sum []
+    !!!< sum 0
+    !!< sum 5
+    !< sum 8
+    < sum 9
+    ** 9
+
+
+
+-- Finding the largest number in a list -------------------------------
+
+A second example is the definition of the largest number in a list of
+numbers. We can specify what largest means along the same lines as
+before, except that now we say that if the list is empty there is no
+largest number. If there's only one element then that is the largest.
+Otherwise, find the largest element in the tail of the list, and compare
+that with the head of the list. The larger of the two is the largest in
+the original list.
+
+We can use the procedure "max" to specify this more precisely. max(x,y),
+where x and y are numbers, is always one of x and y, the larger one if
+one is larger, or x if they are the same number E.g.
+
+    max(3, 55) =>
+    ** 55
+    max(55, 3) =>
+    ** 55
+    max(55, 55) =>
+    ** 55
+    max(-3, -2) =>
+    ** -2
+
+
+We therfore have three cases to consider:
+
+    (a) If L = [] then largest(L) is undefined, and produces an error
+
+    (b) If L has only one element, then largest(L) is that element
+
+    (c) If L has more than one element then
+
+            largest(L) = max( hd(L) , largest( tl(L) ) )
+
+Notice that because "max" takes two numbers as input, this definition
+assumes that hd(L) is always a number and that largest(tl(L)) is always
+a number, which it must be if "largest" is defined properly!
+
+-- A Pop-11 definition of largest(list) -------------------------------
+
+One way of saying this in POP11 is:
+
+    define largest(list) -> result;
+      if tl(list) = [] then
+          hd(list)  -> result
+      elseif length(list) > 1 then
+          max( hd(list), largest(tl(list)) ) -> result
+      endif
+    enddefine;
+
+Test this definition:
+
+    largest([33]) =>
+    ** 33
+    largest([2 66 4 8]) =>
+    ** 66
+
+    vars ages;
+    [23 42 17 9 16 32 15 12 7] -> ages;
+
+    largest(ages) =>
+    ** 42
+
+Try some of your own examples.
+
+What happens if you give it the empty list?
+
+    largest([]) =>
+
+If the list given is empty, then the call of "tl" in the first condition
+will produce an mishap, with the error message
+
+    ;;; MISHAP - NON-EMPTY LIST NEEDED
+    ;;; INVOLVING:  []
+    ;;; DOING    :  tl largest ...
+
+
+You can try compiling that procedure and testing it on some examples of
+lists of numbers, including the empty list. If you trace it, and trace
+max, then you can see how it works.
+
+
+-- Does largest really need to test if the length exceeds 1? ----------
+
+If you think hard about it, you should be able to work out that
+the test for the length being more than 1 is redundant. The length
+cannot be 0 at that stage because an empty list would not have got
+past the call of "tl" in the first test: it would have produced an
+error. The length cannot be 1 because that would involve having a tail
+that is empty, so the first condition
+
+    tl(list) = []
+
+would be true, and the first action would be done, givng the result
+hd(list).
+
+So if the length is not 0 and not 1, then it must be greater than 1,
+by the time it gets to the "elseif" instruction. Hence the test is
+redundant.
+
+We can therefore have a more economical definition without the second
+condition, thus:
+
+    define largest(list) -> result;
+      if tl(list) = [] then
+          hd(list)  -> result
+      else
+          max( hd(list), largest(tl(list)) ) -> result
+      endif
+    enddefine;
+
+
+-- An inefficient definition of "largest" -----------------------------
+
+We can also define largest differently, without using "max". Instead
+we can use the arithmetic operator ">", i.e. "greater than", thus:
+
+    define largest(list) -> result;
+      if tl(list) = [] then
+          hd(list)  -> result
+      elseif hd(list) > largest(tl(list)) then
+          hd(list) -> result
+      else
+          largest(tl(list)) -> result
+      endif
+    enddefine;
+
+Try compiling and testing that one, to make sure it works (using trace
+if necessary). Notice that if the "elseif" condition is FALSE, then
+it will call largest on the tail TWICE. So you may find, if you trace
+this, that it has more recursive calls than you expect. This means
+that it is a wasteful definition. Look back at the previous definition
+to see why it did not need to call largest(tl(list)) twice.
+
+We can avoid calling it twice by calling it once and storing the result
+temporarily in the output local variable "result", and use that to
+compare with the head of the list. So
+
+    define largest(list) -> result;
+      if tl(list) = [] then
+          hd(list)  -> result
+      else
+        largest(tl(list)) -> result;
+
+        ;;; now check whether to use this as the final result or not
+        if hd(list) > result then
+            ;;; The head is bigger, so replace the result
+            hd(list) -> result
+        endif
+      endif
+    enddefine;
+
+
+Compile and test that. Notice that unlike the procedure sum, defined
+above, the procedure largest sometimes DISCARDS the result of the
+recursive call on the tail of list, after using the result to compare
+with the head of the list.
+
+Previously, in the definition of "sum", we added the result from the
+recursive call to the head of the list. This is because the task of SUM
+was different: it must add up all the numbers, not just find one number
+that is bigger than the rest.
+
+
+-- The importance of recursion ----------------------------------------
+
+In each of these procedure definitions - SUM and LARGEST - we see a
+mention of the procedure being defined. It is this feature that makes
+the definition recursive. Definitions of procedures, like definitions of
+almost anything else typically involve mentioning something that isn't
+part of the definition. Dictionary definitions always use words that
+aren't defined in that definition - how could they avoid it?
+
+Recursive definitions are just a very special case ot this more general
+phenomenon - a phenomenon bound up with our capacity to NAME things -
+objects, procedures, events and so on.
+
+What we find however is that there are always special cases e.g.
+factorial(1), sum([]), or largest([3]) that don't involve recursion.
+That is how the recursion avoids going on forever. All recursive
+procedures must have a "stopping condition".
+
+What the stopping condition is depends on the problem. Often it is the
+empty list, but we saw with "largest" that it was a list of length 1.
+Often the stopping condition in numerical recursive procedures is an
+input of 0, but with factorial, as we defined it, the stopping
+condition was an input value of 1.
+
+The significance of recursion lies in its economy, a fact of great
+significance not just in programming but in many intelligent processes.
+
+For example, one approach to a definition of complex sentences uses
+recursion in such a way as to 'embed' simple sentences inside another.
+(See TEACH *ISASENT, and John Lyons, CHOMSKY, Fontana Modern Masters
+paperback).
+
+Such an approach to language structures makes it possible to encompass a
+knowledge of potentially infinitely many sentences in a brain of only
+finite capacity.
+
+-- How recursion works ------------------------------------------------
+
+A metaphor can be used to explain how the computer is able to understand
+these recursive definitions.
+
+Imagine that the inside of the computer houses a library of procedure
+definitions and other such things. Close by the library is a waiting
+room full of men sitting around doing nothing. When I type in a request
+to run a procedure, for example:
+
+    sum(ages) =>
+
+one of the men in the waiting room is instructed by a monitoring process
+to work this out for me.  He gets from the library a photocopy of the
+instructions defining the procedure SUM, and a copy of the list AGES
+(which has been previously stored in the library). This list is then
+taken to be what is named by "set" in the instructions for SUM
+
+    define sum(set) -> total;
+
+As the man in the computer works through the definition of SUM he gets a
+friend (from the waiting room) to handle any subsidiary procedure calls
+including calls of HD, TL, + and SUM so that when evaluating the line
+
+    hd(set) + sum(tl(set))
+
+he asks for a HD to be done (passing over the collection of ages he
+associates with SET to the man performing the HD operation). He then
+asks for a TL to be done and then passes the result of that 'call' of TL
+(a diminished set of ages) over to a man doing a second SUM process.
+
+Our man has to WAIT while the other men do their task, one at a time.
+Some of them may have to call other men to do further sub-tasks.
+
+Eventually the recursive call of SUM is finished, and the second little
+man hands back the result obtained. Our first man does not know or care
+how it is done, as long as the instructions have been followed properly.
+When the result comes back, he can give it, with the result produced by
+HD, to a little man to run the instructions for "+", and hand back the
+number to be used for the final result of the first little man's task.
+
+Notice that our first man does not get involved with evaluating the
+recursive call. A second man comes from the waiting room, with his own
+photocopy of the SUM instructions and his own idea of the value
+associated with the name SET. This second man will in turn ask a third
+man to perform a SUM operation. At one stage, there will be several men
+working on slightly different versions of a SUM process, though most of
+them will be waiting patiently for the next one along the chain to
+finish his task, as they cannot get on until that is done.
+
+The last little man will associated the name SET with the empty list [],
+and by following his copy of the instructions for SUM, he will be able
+to 'return' the result zero without 'invoking' yet another SUM
+operation. Once this last man has finished the previous one continues
+(by getting a friend to do the actual addition) and then returns his
+result to the second last man and so on until the whole process is
+complete.
+
+Here's an interaction with POP-11 in which the TRACE facility was used to
+show the behaviour of SUM. Each line with a ">" represents a new little
+man starting his job with a certain value of SET -- a list of numbers.
+Each line with a "<" represents a man finishing his task of carrying out
+the SUM instructions, and it shows the result he achieved, which will then
+be used by the man who asked him to do it. The vertical lines help you
+relate the start and the finish of the job done by each man.
+
+    trace sum;    ;;; make pop11 show all the "activations"
+
+    sum(ages) =>
+    >sum [23 42 17 9 16 32 15 12 7]
+    !>sum [42 17 9 16 32 15 12 7]
+    !!>sum [17 9 16 32 15 12 7]
+    !!!>sum [9 16 32 15 12 7]
+    !!!!>sum [16 32 15 12 7]
+    !!!!!>sum [32 15 12 7]
+    !!!!!!>sum [15 12 7]
+    !!!!!!!>sum [12 7]
+    !!!!!!!!>sum [7]
+    !!!!!!!!!>sum []
+    !!!!!!!!!<sum 0
+    !!!!!!!!<sum 7
+    !!!!!!!<sum 19
+    !!!!!!<sum 34
+    !!!!!<sum 66
+    !!!!<sum 82
+    !!!<sum 91
+    !!<sum 108
+    !<sum 150
+    <sum 173
+    ** 173
+
+The line with two asterisks shows the final result, printed out by "=>"
+in the original command.
+
+The advantage of this approach to evaluating recursive definitions is
+that each of the men involved has a straightforward task - merely to
+remember what his 'local variables' are and to remember how far through
+the procedure definition he is. He doesn't have to understand the
+process as a whole - just his part in it (which is simple, and
+completely specified by HIS copy of the instructions).
+
+Each little man who waits for others will have to remember where he had
+got to. So he keeps his finger on the next instruction he has to obey as
+soon as the next one has finished. At any one time different little men
+may have their fingers waiting on different instructions.
+
+-- The use of "local" variables ---------------------------------------
+
+The man carrying out an operation can be asked to remember values other
+than the 'arguments' (or 'inputs'). Consider the following:
+
+    define largest(set) -> result;
+      vars temp;
+      if tl(set) = [] then
+          hd(set) -> result
+      else
+          largest(tl(set)) -> temp;
+          if hd(set) > temp then
+              hd(set) -> result
+          else
+              temp -> result
+          endif
+      endif
+    enddefine;
+
+In this example, the man performing a LARGEST process has been asked to
+remember an additional local variable' called TEMP (that's what the VARS
+statement is for). Initially the man doesn't know what value to associate
+with this name, but if he has to obey the instructions on the sixth line
+of the definition he encounters an 'assignment statement'
+
+    largest(tl(set)) -> temp;
+
+which can be roughly taken to mean 'get another little man to work out
+the largest element of the rest of the set, and when he has finished and
+given back a result remember it by the name TEMP'.
+
+Different little men will have different values for TEMP, just has they
+have different values for SET, and RESULT. These are called "local"
+variables because their values are private to each activation, or each
+little man. You can think of this by supposing that when each little man
+gets his sheet of paper with the set of instructions he has to obey,
+there are some named boxes on the sheet, and what is written into the
+boxes may be different for all of them.
+
+So each activation of a procedure needs a special workspace for its
+"local" variables, including the input locals and output locals.
+
+-- Further work -------------------------------------------------------
+
+This teach file by no means exhausts what can be accomplished using
+recursive definitions. For example 'mutually recursive' definitions -
+where two or more operations are defined in terms of each other - can be
+handled by the POP11 system as easily as the more straightforward
+'simple recursion' shown above.
+
+Moreover, the examples given given above all relied on your
+understanding of numbers. POP11 has many structure building and
+structure editing facilities. Recursive definitions are often the ONLY
+sensible way of manipulating the complex and varied objects one can
+create using these facilities.
+
+-- Some things to do: -------------------------------------------------
+
+    (a) Write out English versions of SUM and LARGEST, and
+        get some friends to help you enact their behaviour.
+    (b) Write a POP11 definition of your own to find the
+        SMALLEST number in some set, and run it on the computer.
+    (c) What does the following procedure do:
+        define sillyprint(set);
+          if set = [] then
+              "finished" =>
+          else
+              hd(set) =>
+              sillyprint(tl(set));
+              hd(set) =>
+          endif
+        enddefine;
+
+        sillyprint([a b c d]);
+
+    (d) Try TEACH * SETS, TEACH * SETS2
+
+The file TEACH * RECURSE2 discusses some recursive procedures for drawing
+pictures.
+
+TEACH * RECURSE3 analyses some of the problems of dealing with the
+"terminating" condition, e.g. recursing down a list till you
+reach the empty list.
+
+
+--- C.all/teach/recurse1
+--- Copyright University of Sussex 1990. All rights reserved. ----------
