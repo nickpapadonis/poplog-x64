@@ -381,7 +381,7 @@ enddefine;
 
 	;;; Use C compiler to link
 constant
-	cc_link_command_header = '$POP__cc -Wl,-export-dynamic -o $IM \\\n'
+	cc_link_command_header = '$POP__cc -no-pie -Wl,-export-dynamic -o $IM \\\n'
 ;
 
 #_ELSE

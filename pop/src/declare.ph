@@ -265,7 +265,7 @@ weak constant procedure (
 		Checkr_exptrclass, Checkr_exptrclass_subscr0, Checkr_exptrclass_subscr,
 		Checkr_exptrclass_nargs, Checkr_exptrclass_ptr, Cons_extern_ptr,
 		Call_extern, Call_extern_nargs,
-		Call_sys_nointr,
+		Call_sys_se, Call_sys_nointr, Call_sys_nointr_se,
 		Inline_checkr_integer, Inline_checkr_procedure,
 		Clawback,
 		Clear_ast_queue,

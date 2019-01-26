@@ -1186,6 +1186,7 @@ define lconstant gen_asm_output(output_dir);
 	;;; N.B. 'poplink_1' must NOT contain any writeable data
 	startfile(output_dir, 'poplink_1') ->> fileout_1 -> asmf_charout;
 	CODE -> asmf_charout_seg;
+        asm_align_word();
 
 	;;; output the first 2 words of <false> on 'poplink_1'
 	;;; rest output at end after pdprops labels equivalent to false)

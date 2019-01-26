@@ -2119,7 +2119,8 @@ enddefine;
 
 define syntax _extern;
 	lvars	xpdr, count, item, routine, alist, indir = false, nointr = false,
-			isweak = false, old_autoload = pop_autoload;
+			isweak = false, old_autoload = pop_autoload,
+                        sign_extend = false;
 	dlocal	pop_autoload = false;
 
 	if islist(nextitem()) then
@@ -2138,7 +2139,10 @@ define syntax _extern;
 		if fast_lmember("WEAK", alist) then
 			;;; weak symbol in VMS
 			true -> isweak
-		endif
+		endif;
+                if fast_lmember("SE", alist) then
+                        true -> sign_extend
+                endif
 	endif;
 
 	read_extern_name() -> xpdr;
@@ -2190,11 +2194,17 @@ define syntax _extern;
 
 	if indir then sysPUSH(xpdr) else sysPUSHQ(xpdr) endif;
 
+        if sign_extend then
+            sysCALL(if nointr then "Call_sys_nointr_se"
+                              else "Call_sys_se" endif)
+        else
+
 #_IF DEF UNIX
-	sysCALL(if nointr then "Call_sys_nointr" else "_call_sys" endif)
+	    sysCALL(if nointr then "Call_sys_nointr" else "_call_sys" endif)
 #_ELSE
-	sysCALL("_call_sys")
+	    sysCALL("_call_sys")
 #_ENDIF
+        endif
 enddefine;
 
 define macro _SVB_OFFS;

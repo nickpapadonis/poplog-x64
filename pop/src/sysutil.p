@@ -47,6 +47,19 @@ define Call_sys_nointr(_nargs, _routine) -> _res;
 	endrepeat
 enddefine;
 
+define Call_sys_se(_nargs, _routine) -> _res;
+    lvars _nargs, _routine, _res;
+    _call_sys((), _nargs, _routine) -> _res;
+    _res _bimask _4294967295 -> _res;
+    if _res _gr _2147483647 then _res _sub _4294967296 -> _res endif;
+enddefine;
+
+define Call_sys_nointr_se(_nargs, _routine) -> _res;
+    lvars _nargs, _routine, _res;
+    Call_sys_nointr((), _nargs, _routine) -> _res;
+    _res _bimask _4294967295 -> _res;
+    if _res _gr _2147483647 then _res _sub _4294967296 -> _res endif;
+enddefine;
 
 	/*	Set protections on pages (_prot as defined in memseg.ph)
 	*/

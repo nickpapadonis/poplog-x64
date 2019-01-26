@@ -1370,7 +1370,7 @@ define Opencreate(file, fullname, _oflags, _mode) -> _fd;
 			_fd, _retry = 1;
 	lstackmem stackbuff _nbuf;
 	repeat
-		_extern open(Encode_sys(fullname,_nbuf), _oflags, _mode) -> _fd;
+		_extern[SE] open(Encode_sys(fullname,_nbuf), _oflags, _mode) -> _fd;
 		quitif((Sys_fd_open_check(_pint(_fd), true, _retry) ->> _retry) fi_< 0)
 	endrepeat;
 
