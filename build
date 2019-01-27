@@ -113,7 +113,7 @@ ls -l $poplocal/local
 echo "Link."
 echo "Nick $popsys"
 
-rm $popsys/basepop $popsys/clisp $popsys/doc $popsys/help $popsys/im $popsys/oldpop11 $popsys/pml $popsys/prolog $popsys/ref $popsys/teach $popsys/ved $popsys/ved $popsys/xved 2>/dev/null
+rm $popsys/clisp $popsys/doc $popsys/help $popsys/im $popsys/oldpop11 $popsys/pml $popsys/prolog $popsys/ref $popsys/teach $popsys/ved $popsys/ved $popsys/xved 2>/dev/null
 ln -s $popsys/basepop11 $popsys/clisp 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/doc 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/help 2&>/dev/null
