@@ -110,7 +110,10 @@ mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
-rm $popsys/basepop $popsys/clisp $popsys/doc $popsys/help $popsys/im $popsys/oldpop11 $popsys/pml $popsys/prolog $popsys/ref $popsys/teach $popsys/ved $popsys/ved $popsys/xved
+echo "Link."
+echo "Nick $popsys"
+
+rm $popsys/basepop $popsys/clisp $popsys/doc $popsys/help $popsys/im $popsys/oldpop11 $popsys/pml $popsys/prolog $popsys/ref $popsys/teach $popsys/ved $popsys/ved $popsys/xved 2>/dev/null
 ln -s $popsys/basepop11 $popsys/clisp 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/doc 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/help 2&>/dev/null
@@ -134,9 +137,8 @@ mv $popsys/basepop11 $popsys/basepop11.old
 cp $usepop/newpop11 $popsys/basepop11
 
 ### The following are done by the base command
-$popcom/mkstartup
-
-$popcom/mkplog
-$popcom/mkclisp
-$popcom/mkpml
-$popcom/mkxved
+#$popcom/mkstartup
+#$popcom/mkplog
+#$popcom/mkclisp
+#$popcom/mkpml
+#$popcom/mkxved
