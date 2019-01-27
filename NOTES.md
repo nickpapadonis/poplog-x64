@@ -4,7 +4,7 @@ NOTES
 This version may need attention, please read:
 ------------------------------------------------------------------------
 
-## 64 Bit Fixes ##
+## 64 Bit Fixes
 
 Info from Waldek:
 There may be more fixes to find and replace.
@@ -26,46 +26,41 @@ should be removed.  With proper definition for 32-bit
 poplog this should significanly reduce differences between
 32-bit and 64-bit version."
 
-## Build process ##
+## Build process
 1. Use 'corepop' and files in src/syscomp to create 'popc',
    'poplink' and 'poplibr'.
-2) Use 'popc' to compile files is src/
-3) Link new poplog using 'poplink' and 'poplibr' (that also needs
+2. Use 'popc' to compile files is src/
+3. Link new poplog using 'poplink' and 'poplibr' (that also needs
    support code from 'extern/lib')
-4) Build running images images
+4. Build running images images
 
 After 3) you may go to 1) if you want to modify how tools used
 in build work.
 
-## Saved Images ##
+## Saved Images
 The saved images are created by various scripts in
 
 + $usepop/pop/com/
 
-## pop/com scripts ##
+## pop/com scripts
+
 + mkstartup
   - creates startup.psv
   - needed by most of the others
-
 + mkplog
   - makes prolog.psv
-
 + mkclisp
   - makes clisp.psv
-
 + mkpml
   - makes pml.psv
-
 + Poplog ML
-
 + mkxved
   -  makes xved.psv
-
 + makeimages
   - assumes mkstartup has been run, then
   - runs mkpml, mkplog, mkclisp
 
-## basepop11 and it's directed soft links ##
+## basepop11 and it's directed soft links
 basepop11 is linked (as ls -l in a new installation should show) to several
 other filenames:
 
@@ -85,34 +80,29 @@ That means you can invoke basepop11 with different names. When it is
 invoked it checks which name was used, and then runs basepop11 with a saved
 image to provide the system required
 
-## Saved images ##
+## Saved images
 The saved images are created by various scripts in
 
 + $usepop/pop/com/
 
-## $usepop/pop/com scripts ##
+## $usepop/pop/com scripts
 + mkstartup
   - creates startup.psv
   - needed by most of the others
-
 + mkplog
   - makes prolog.psv
-
 + mkclisp
   - makes clisp.psv
-
 + mkpml
   - makes pml.psv
   - Poplog ML
-
 + mkxved
   - makes xved.psv
-
 + makeimages
   - assumes mkstartup has been run, then
   - runs mkpml, mkplog, mkclisp
 
-## basepop invocation notes ##
+## basepop invocation notes
 If you give the command X where == prolog, clisp, pml, or xved
 then it runs the appropriate one of
 
@@ -121,7 +111,7 @@ then it runs the appropriate one of
 + basepop11 +startup +pml
 + basepop11 +startup +xved
 
-## Stress testing ##
+## Stress testing
 mkeliza produces an eliza.psv in $popsavelib which can be run as
 
 + pop11 +eliza
