@@ -110,13 +110,13 @@ mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
-#mv $popsys/newpop11 $popsrc/pop11
+# X library errors below
+$popcom/mkstartup
 
-exit 1
-echo "Link."
-echo "Nick $popsys"
+mv $popsys/newpop11 $popsrc/pop11
 
 rm $popsys/clisp $popsys/doc $popsys/help $popsys/im $popsys/oldpop11 $popsys/pml $popsys/prolog $popsys/ref $popsys/teach $popsys/ved $popsys/ved $popsys/xved 2>/dev/null
+ln -s $popsrc/pop11 $popsys/basepop11 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/clisp 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/doc 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/help 2&>/dev/null
@@ -129,6 +129,7 @@ ln -s $popsys/basepop11 $popsys/teach 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/ved 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/xved 2&>/dev/null
 
+exit 1
 # NP: Unclear on the next steps here and what to do with "newpop11" to rebuild
 # the rest of poplog.
 
