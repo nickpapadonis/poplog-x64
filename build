@@ -127,12 +127,10 @@ echo " -----------------------------------------------"
 cd $popsys
 
 if $build_core; then
-    echo "Linking Core Libraries"
     pglink -core
 fi
 
 if $build_compl; then
-    echo "Linking Complete Libraries"
     pglink
 fi
 
@@ -144,7 +142,6 @@ mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
-# X library errors below
 $popcom/mkstartup
 
 mv $popsys/newpop11 $popsrc/pop11
@@ -163,14 +160,18 @@ ln -s $popsys/basepop11 $popsys/teach 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/ved 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/xved 2&>/dev/null
 
-# If no X
-#$usepop/pop/src/newpop -link -norsv
-# If X
-$usepop/pop/src/newpop -link -x=-xm -norsv
+if $build_x; then
+    $usepop/pop/src/newpop -link -x=-xm -norsv
+else
+    $usepop/pop/src/newpop -link -norsv
+fi
 
 ### The following are done by the base command
 $popcom/mkstartup
 $popcom/mkplog
 $popcom/mkclisp
 $popcom/mkpml
-$popcom/mkxved
+
+if $build_x; then
+    $popcom/mkxved
+fi
