@@ -200,9 +200,9 @@ case $OS_NAME in
 
 	Linux)
 		XLINK=XT
-		if [ -d $x11_64_libs ]; then
-			XT_DIRS=-L$x11_64_libs
-			XM_DIRS=-L$x11_64_libs
+		if [ -d /usr/lib/x86_64-linux-gnu ]; then
+			XT_DIRS=-L/usr/lib/x86_64-linux-gnu
+			XM_DIRS=-L/usr/lib/x86_64-linux-gnu
 			# libXm sometimes depends on libXext
 			XM_FILES="-lXm -lXt -lXext -lX11"
 		elif [ -d /usr/X386/lib ]; then

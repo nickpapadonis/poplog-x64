@@ -18,10 +18,6 @@ popsrc=$usepop/pop/src
 # set the poplocal variables
 poplocal=$poplogroot
 
-# Maybe Redhat
-#x11_64_libs=/usr/lib64
-# Debian and Ubuntu
-x11_64_libs=/usr/lib/x86_64-linux-gnu/
 local=$poplocal/local
 
 # Run the initialisation files to set up additional environment

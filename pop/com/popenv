@@ -203,9 +203,9 @@ switch ($OS_NAME)
 
 	case Linux:
 		set XLINK = XT
-		if ( -d $x11_64_libs ) then
-			set XT_DIRS = -L$x11_64_libs
-			set XM_DIRS = -L$x11_64_libs
+		if ( -d /usr/lib/x86_64-linux-gnu ) then
+			set XT_DIRS = -L/usr/lib/x86_64-linux-gnu
+			set XM_DIRS = -L/usr/lib/x86_64-linux-gnu
 			# libXm sometimes depends on libXext
 			set XM_FILES = "-lXm -lXt -lXext -lX11"
 		else if ( -d /usr/X11R6/lib ) then
