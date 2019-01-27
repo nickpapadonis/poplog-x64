@@ -110,8 +110,7 @@ mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
-cp $popsys/newpop11 $popsrc/pop11
-
+#mv $popsys/newpop11 $popsrc/pop11
 
 exit 1
 echo "Link."
