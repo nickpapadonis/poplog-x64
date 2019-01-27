@@ -129,20 +129,14 @@ ln -s $popsys/basepop11 $popsys/teach 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/ved 2&>/dev/null
 ln -s $popsys/basepop11 $popsys/xved 2&>/dev/null
 
-exit 1
-# NP: Unclear on the next steps here and what to do with "newpop11" to rebuild
-# the rest of poplog.
-
+# If no X
 #$usepop/pop/src/newpop -link -norsv
-#$usepop/pop/src/newpop11 -link -x=-xm -norsv
-
-# Move out the old binary
-#mv $popsys/basepop11 $popsys/basepop11.old
-#cp $usepop/newpop11 $popsys/basepop11
+# If X
+$usepop/pop/src/newpop -link -x=-xm -norsv
 
 ### The following are done by the base command
-#$popcom/mkstartup
-#$popcom/mkplog
-#$popcom/mkclisp
-#$popcom/mkpml
-#$popcom/mkxved
+$popcom/mkstartup
+$popcom/mkplog
+$popcom/mkclisp
+$popcom/mkpml
+$popcom/mkxved
