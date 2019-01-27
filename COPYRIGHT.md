@@ -2,19 +2,21 @@ COPYRIGHT NOTICE FOR POPLOG AND ASSOCIATED FILES AND PACKAGES
 =============================================================
 
 School of Computer Science The University of Birmingham 
-In collaboration with School of Cognitive and Computing Sciences The University of Sussex
+
+In collaboration with School of Cognitive and Computing Sciences The University of Sussex 
 
 The following licensing information is based on the MIT/XFREE86 licence. 
 ------------------------------------------------------------------------
 (See http://www.opensource.org/.)
 ------------------------------------------------------------------------
 
-###1. Poplog Copyright###
+## 1. Poplog Copyright ##
 
 Poplog code without an explicit copyright is covered by the following copy-right:
+
 Copyright (C) 1981-1999 The University of Sussex. All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: 
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
@@ -32,17 +34,9 @@ Software, documentation, teaching materials available at this site are summarise
 
 MIT/XFREE86 License
 ---------------------
-Copyright (c) 1999 The University of Sussex. All Rights Reserved.
+## Copyright (c) 1999 The University of Sussex. All Rights Reserved. ##
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.  
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
