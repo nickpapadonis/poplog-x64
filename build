@@ -130,11 +130,11 @@ ln -s $popsys/basepop11 $popsys/xved 2&>/dev/null
 # the rest of poplog.
 
 #$usepop/pop/src/newpop -link -norsv
-$usepop/pop/src/newpop11 -link -x=-xm -norsv
+#$usepop/pop/src/newpop11 -link -x=-xm -norsv
 
 # Move out the old binary
-mv $popsys/basepop11 $popsys/basepop11.old
-cp $usepop/newpop11 $popsys/basepop11
+#mv $popsys/basepop11 $popsys/basepop11.old
+#cp $usepop/newpop11 $popsys/basepop11
 
 ### The following are done by the base command
 #$popcom/mkstartup
