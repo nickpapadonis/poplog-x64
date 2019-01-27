@@ -9,8 +9,6 @@
 
 #include "c_core.h"
 
-
-
 /*
 	Under SCO, compile with:
 
@@ -477,6 +475,18 @@ void pop$timeval_from_quadtime(tvp, quadp, isabs)
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdlib.h>
+// XXX NP
+#ifdef free
+#undef free
+#endif
+#ifdef realloc
+#undef realloc
+#endif
+#ifdef cfree
+#undef cfree
+#endif
+
 
 #if defined(SVR4) || defined(AIX)
 #define HAS_STREAMS
@@ -628,7 +638,7 @@ int set_libc_errno(int x)
 
 void _pop_errsig_handler(int sig, siginfo_t *info, ucontext_t *context)
 {
-	extern __pop_errsig();
+	extern int __pop_errsig();
 
 	int code = 0;
 	caddr_t addr = NULL;
@@ -998,7 +1008,7 @@ static int	  async_maxfd[3]	/* max file desc in async_fds */
 
 #define TOT_ASYNC	(async_ctr[RDSET]+async_ctr[WRSET]+async_ctr[EXSET])
 
-static copybytes();
+static void copybytes();
 bool _pop_set_async_check();
 static timeval zero_tim;
 
@@ -1063,7 +1073,7 @@ bool _pop_set_async_check(on, fd, set)
 	register bool ison;
 	int tot_async, seln, flags, res;
 
-	if (!FD_ISSET(fd, &async_fds[set])) return;
+	if (!FD_ISSET(fd, &async_fds[set])) return(FALSE);
 
 	on_fds = &async_on_fds[set];
 	ison = FD_ISSET(fd, on_fds);
@@ -1579,7 +1589,7 @@ int realloc_srchlen = 4;	/* 4 should be plenty, -1 =>'s whole list */
  * header starts at ``freep''.	If srchlen is -1 search the whole list.
  * Return bucket number, or -1 if not found.
  */
-static findbucket(freep, srchlen)
+static int findbucket(freep, srchlen)
 	ALLOCP freep;
 	int srchlen;
 	{ register ALLOCP p;
@@ -1672,7 +1682,7 @@ void *calloc(size_t num, size_t size)
 	return(mp);
 	}
 
-cfree(p, num, size)
+void cfree(p, num, size)
 	register char *p;
 	register unsigned num, size;
 	{ free(p); }
@@ -1861,7 +1871,7 @@ int *dum;
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 
 
-static copybytes(from, to, nbytes)
+static void copybytes(from, to, nbytes)
 register char *from, *to;
 int nbytes;
 	{ register char *lim;

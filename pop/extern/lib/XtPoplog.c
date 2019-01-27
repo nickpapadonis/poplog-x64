@@ -37,7 +37,7 @@ typedef unsigned sigsave_t;
 /* == Hard Reference to the Vendor Shell Widget ================= */
 
 #ifndef __NUTC__
-externalref vendorShellWidgetClass;
+externalref char vendorShellWidgetClass;
 static char *dummy = (char*)&vendorShellWidgetClass;
 #endif
 
@@ -156,7 +156,7 @@ static char *_SysErrorMsg (n)
 
 #define XTFORMATSTR "%s: %s -- %s"
 
-static Err_msg(name,type,class,defaultp,params,num_params, err_p)
+static void Err_msg(name,type,class,defaultp,params,num_params, err_p)
 	String name,type,class,defaultp;
 	String* params;
 	Cardinal* num_params;
