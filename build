@@ -110,27 +110,33 @@ mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
+rm $popsys/basepop $popsys/clisp $popsys/doc $popsys/help $popsys/im $popsys/oldpop11 $popsys/pml $popsys/prolog $popsys/ref $popsys/teach $popsys/ved $popsys/ved $popsys/xved
+ln -s $popsys/basepop11 $popsys/clisp 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/doc 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/help 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/im 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/oldpop11 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/pml 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/prolog 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/ref 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/teach 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/ved 2&>/dev/null
+ln -s $popsys/basepop11 $popsys/xved 2&>/dev/null
+
 # NP: Unclear on the next steps here and what to do with "newpop11" to rebuild
 # the rest of poplog.
 
 #$usepop/pop/src/newpop -link -norsv
-#$popsys/newpop11 -link -x=-xm -norsv
+$usepop/pop/src/newpop11 -link -x=-xm -norsv
 
 # Move out the old binary
-#mv $popsys/basepop11 $popsys/basepop11.old
-#cp $popsys/newpop11 $popsys/basepop11
+mv $popsys/basepop11 $popsys/basepop11.old
+cp $usepop/newpop11 $popsys/basepop11
 
 ### The following are done by the base command
-#setenv pop_pop11 "-$popsavelib/startup.psv"
-#$popcom/mkstartup
+$popcom/mkstartup
 
-#rm $popsys/pop11
-#ln -s $popsys/basepop11 $popsys/pop11
-
-##
-## ## Needed for next items
-##
-## $popcom/mkplog
-## $popcom/mkclisp
-## $popcom/mkpml
-## $popcom/mkxved
+$popcom/mkplog
+$popcom/mkclisp
+$popcom/mkpml
+$popcom/mkxved
