@@ -110,6 +110,7 @@ mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
 
+exit 1
 echo "Link."
 echo "Nick $popsys"
 
