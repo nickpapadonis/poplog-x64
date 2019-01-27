@@ -109,7 +109,7 @@ ls -l newpop11
 mv $poplocal/local.temp $poplocal/local
 
 ls -l $poplocal/local
-
+exit 1
 # X library errors below
 $popcom/mkstartup
 
