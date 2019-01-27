@@ -18,6 +18,22 @@
 # After 3) you may go to 1) if you want to modify how tools used
 # in build work.
 
+build_type="core"
+if [ $# -gt 0 ]; then
+    case "$1" in
+        compl)
+            build_type="compl"
+            ;;
+
+        core)
+            build_type="core"
+            ;;
+        *)
+            echo "$0: <compl | core>"
+            exit 1
+    esac
+fi
+
 source ./popenv-build
 
 # prevent local files being found and compiled
@@ -99,9 +115,12 @@ echo "link a complete system into a newpop11 image, using pglink"
 echo " -----------------------------------------------"
 cd $popsys
 
-# Only core compiled for now on 64-bit
-#pglink -core
-pglink
+if [ "$build_type" == "core" ]; then
+    pglink -core
+fi
+if [ "$build_type" == "compl" ]; then
+    pglink
+fi
 
 ls -l newpop11
 # newpop11 basepop11
