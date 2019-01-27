@@ -42,7 +42,7 @@ The saved images are created by various scripts in
 
 + $usepop/pop/com/
 
-## pop/com scripts
+## pop and com scripts
 
 + mkstartup
   - creates startup.psv
