@@ -100,7 +100,8 @@ echo " -----------------------------------------------"
 cd $popsys
 
 # Only core compiled for now on 64-bit
-pglink -core
+#pglink -core
+pglink
 
 ls -l newpop11
 # newpop11 basepop11
