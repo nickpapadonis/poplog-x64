@@ -18,20 +18,27 @@
 # After 3) you may go to 1) if you want to modify how tools used
 # in build work.
 
-build_type="core"
-if [ $# -gt 0 ]; then
-    case "$1" in
-        compl)
-            build_type="compl"
-            ;;
+build_core=true
+build_x=false
+build_arg_err=false
+for arg in "$@"
+do
+    if [ "$arg" == "compl" ]; then
+        build_compl=true
+    elif [ "$arg" == "core" ]; then
+        build_core=true
+    elif [ "$arg" == "x" ]; then
+        build_x=true
+    else
+        if [ $# -gt 0 ]; then
+            build_arg_err=true
+        fi
+    fi
+done
 
-        core)
-            build_type="core"
-            ;;
-        *)
-            echo "$0: <compl | core>"
-            exit 1
-    esac
+if $build_arg_err; then
+    echo "$0 [core|compl] [x]"
+    exit 1
 fi
 
 source ./popenv-build
@@ -69,8 +76,10 @@ pwd
 
 # below may not work
 #echo "mkXpm"
-#./mkXpm -I/usr/lib64
-#./mkXpm -I/usr/lib/x86_64-linux-gnu/
+if $build_x; then
+    #./mkXpm -I/usr/lib64
+    ./mkXpm -I/usr/lib/x86_64-linux-gnu/
+fi
 
 cd $usepop/pop/obj
     pwd
@@ -100,13 +109,15 @@ cd $usepop/pop/ved/src/
     time pglibr -c ../../obj/vedsrc.wlb *.w
     rm *.[ow]
 
-cd $usepop/pop/x/src/
-    pwd
-    echo 'pgcomp'
-    pgcomp *.[ps]
-    echo 'pglibr'
-    pglibr -c ../../obj/xsrc.wlb *.w
-    rm *.[ow]
+if $build_x; then
+    cd $usepop/pop/x/src/
+        pwd
+        echo 'pgcomp'
+        pgcomp *.[ps]
+        echo 'pglibr'
+        pglibr -c ../../obj/xsrc.wlb *.w
+        rm *.[ow]
+fi
 
 fi
 # link a complete system into a newpop11 image, using pglink
@@ -115,10 +126,13 @@ echo "link a complete system into a newpop11 image, using pglink"
 echo " -----------------------------------------------"
 cd $popsys
 
-if [ "$build_type" == "core" ]; then
+if $build_core; then
+    echo "Linking Core Libraries"
     pglink -core
 fi
-if [ "$build_type" == "compl" ]; then
+
+if $build_compl; then
+    echo "Linking Complete Libraries"
     pglink
 fi
 
