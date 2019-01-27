@@ -46,15 +46,21 @@ The saved images are created by various scripts in
 + mkstartup
   - creates startup.psv
   - needed by most of the others
+
 + mkplog
   - makes prolog.psv
+
 + mkclisp
   - makes clisp.psv
+
 + mkpml
   - makes pml.psv
+
 + Poplog ML
+
 + mkxved
   -  makes xved.psv
+
 + makeimages
   - assumes mkstartup has been run, then
   - runs mkpml, mkplog, mkclisp
@@ -88,15 +94,20 @@ The saved images are created by various scripts in
 + mkstartup
   - creates startup.psv
   - needed by most of the others
+
 + mkplog
   - makes prolog.psv
+
 + mkclisp
   - makes clisp.psv
+
 + mkpml
   - makes pml.psv
   - Poplog ML
+
 + mkxved
   - makes xved.psv
+
 + makeimages
   - assumes mkstartup has been run, then
   - runs mkpml, mkplog, mkclisp
